@@ -31,7 +31,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 9.0.x
+          dotnet-version: 8.0.x
           
       - name: Restore
         run: dotnet restore
@@ -44,15 +44,14 @@ jobs:
 
       - name: resharper-cleanup
         run: |                    
-          jb cleanupcode Edit.NET.slnx 
+          jb cleanupcode Edit.NET.sln
         working-directory: ./src
 
 
       - name: Inspect code
         uses: muno92/resharper_inspectcode@1.12.0
         with:
-          solutionPath: ./src/Edit.NET.slnx
-          exclude: ""
+          solutionPath: ./src/Edit.NET.sln
           version: '2025.2.1'
           minimumSeverity: 'warning'
 
@@ -90,7 +89,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 9.0.x
+          dotnet-version: 8.0.x
 
       - name: Restore
         run: dotnet restore
@@ -101,7 +100,7 @@ jobs:
 
       - name: Run dupfinder (duplicate code check, produce XML)
         run: |
-          ~/.dotnet/tools/jb dupfinder Edit.NET.slnx --exclude-code-regions='DUPFINDER_ignore' --exclude-by-comment='DUPFINDER_ignore' --output=dupfinder-report.xml --discard-cost=100
+          ~/.dotnet/tools/jb dupfinder Edit.NET.sln --exclude-code-regions='DUPFINDER_ignore' --exclude-by-comment='DUPFINDER_ignore' --output=dupfinder-report.xml --discard-cost=100
         working-directory: ./src
 
       - name: Upload dupfinder XML report
