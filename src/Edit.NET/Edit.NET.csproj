@@ -4,9 +4,11 @@
         <OutputType>Exe</OutputType>
         <Nullable>enable</Nullable>
         <PackAsTool>true</PackAsTool>
-        <ToolCommandName>Edit.NET</ToolCommandName>
-        <IsPackable>true</IsPackable>
-        <RootNamespace>EditNET</RootNamespace>        
+        <RootNamespace>EditNET</RootNamespace>
+        <PackageId>EditDotNet</PackageId>
+        <ToolCommandName>Edit.NET</ToolCommandName>        
+        <ProjectUrl>https://github.com/consolonia/Edit.NET</ProjectUrl>
+        <RepositoryUrl>https://github.com/consolonia/Edit.NET</RepositoryUrl>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)' != 'Debug'">
