@@ -44,7 +44,7 @@ namespace EditNET
         {
             context.SetOutput(Unit.Default);
             MainWindow.RequestedThemeVariant = context.Input.Item2 ? ThemeVariant.Light : ThemeVariant.Dark;
-            if (!LoadUITheme(context.Input.Item1))
+            if (!LoadUiTheme(context.Input.Item1))
             {
                 ShowThemeIncompatible();
                 return;
@@ -56,7 +56,7 @@ namespace EditNET
         public override void OnFrameworkInitializationCompleted()
         {
             var desktopLifetime = (IClassicDesktopStyleApplicationLifetime)ApplicationLifetime!;
-            bool themeLoaded = LoadUITheme(ViewModel.EditorViewModel.Settings.ConsoloniaTheme);
+            bool themeLoaded = LoadUiTheme(ViewModel.EditorViewModel.Settings.ConsoloniaTheme);
             desktopLifetime.MainWindow = new MainWindow
             {
                 DataContext = ViewModel,
@@ -97,7 +97,7 @@ namespace EditNET
             _notificationManager!.Show(new Notification { Type = notificationType, Message = message, Title = title });
         }
 
-        private bool LoadUITheme(ConsoloniaTheme theme)
+        private bool LoadUiTheme(ConsoloniaTheme theme)
         {
             if (!((ConsoloniaLifetime)ApplicationLifetime!).IsRgbColorMode() &&
                 theme is ConsoloniaTheme.Modern or ConsoloniaTheme.ModernContrast)
