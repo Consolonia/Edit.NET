@@ -126,7 +126,7 @@ namespace EditNET.ViewModels
             if (opened)
             {
                 string? directoryName = Path.GetDirectoryName(path);
-                if (!string.IsNullOrEmpty(directoryName))
+                if (!string.IsNullOrEmpty(directoryName)) // path can be in the current directory
                     Directory.SetCurrentDirectory(directoryName);
             }
         }
