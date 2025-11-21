@@ -58,9 +58,9 @@ namespace EditNET
                     try
                     {
                         //todo: we need better dialog
-                        await MessageBox.ShowDialog("Application Error",
-                            string.Concat("We apologize for the inconvenience, but an unexpected error occurred. \r\n",
-                                "Please restart the application or leave this dialog open - it will close the application automatically in 30 seconds.\r\n",
+                        await MessageBox.ShowDialog("Unexpected Error",
+                            string.Concat("An unexpected error has occurred. We apologize for the inconvenience.\\r\\n",
+                                "Please restart the application. If you leave this dialog open it will close the application automatically in 30 seconds.\r\n",
                                 "Error details: ", exception.ToString()));
                     }
                     catch

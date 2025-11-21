@@ -124,7 +124,11 @@ namespace EditNET.ViewModels
             });
 
             if (opened)
-                Directory.SetCurrentDirectory(Path.GetDirectoryName(path)!);
+            {
+                string? directoryName = Path.GetDirectoryName(path);
+                if (!string.IsNullOrEmpty(directoryName)) // path can be in the current directory
+                    Directory.SetCurrentDirectory(directoryName);
+            }
         }
 
         private async Task SaveFileInternalAsync()
