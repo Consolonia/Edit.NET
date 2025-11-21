@@ -106,7 +106,7 @@ namespace EditNET
             Styles[0] = theme switch
             {
                 ConsoloniaTheme.Modern => new ModernTheme(),
-                ConsoloniaTheme.ModernContrast => new ModernContrastTheme(),
+                ConsoloniaTheme.ModernContrast => new ModernContrastTheme(), 
                 ConsoloniaTheme.TurboVision => new TurboVisionTheme(),
                 ConsoloniaTheme.TurboVisionCompatible => new TurboVisionCompatibleTheme(),
                 ConsoloniaTheme.TurboVisionGray => new TurboVisionGrayTheme(),
