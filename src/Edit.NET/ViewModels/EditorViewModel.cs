@@ -66,7 +66,7 @@ namespace EditNET.ViewModels
             if (!await CheckSaved())
                 return;
 
-            Document = new TextDocument() { FileName = "Untitled" + Settings.DefaultExtension };
+            Document = new TextDocument { FileName = "Untitled" + Settings.DefaultExtension };
             FilePath = null;
 
             await FocusEditorInteraction.Handle(Unit.Default);
@@ -120,7 +120,6 @@ namespace EditNET.ViewModels
                 path = Path.GetFullPath(path, Environment.CurrentDirectory);
             FilePath = path;
             if (File.Exists(FilePath))
-            {
                 await HandleFileExceptions(async () =>
                 {
                     Document = new TextDocument(new StringTextSource(await File.ReadAllTextAsync(path)))
@@ -128,7 +127,6 @@ namespace EditNET.ViewModels
                         FileName = Path.GetFileName(path)
                     };
                 });
-            }
 
             string? directoryName = Path.GetDirectoryName(path);
             if (!string.IsNullOrEmpty(directoryName)) // path can be in the current directory
