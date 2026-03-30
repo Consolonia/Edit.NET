@@ -38,7 +38,8 @@
         <PackageReference Include="TextMateSharp.Grammars" Version="2.0.3" />
     </ItemGroup>
 
-    <Target Name="PackPortable" AfterTargets="Pack" Condition="'$(PortableBuild)' != 'true'">
+    <Target Name="PackPortable" AfterTargets="Pack"
+            Condition="'$(PortableBuild)' != 'true' AND '$(RuntimeIdentifier)' == ''">
         <MSBuild Projects="$(MSBuildProjectFile)"
                  Targets="Pack"
                  Properties="PortableBuild=true;Configuration=$(Configuration);PackageOutputPath=$(PackageOutputAbsolutePath);ContinuousIntegrationBuild=$(ContinuousIntegrationBuild)" />
