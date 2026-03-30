@@ -10,8 +10,8 @@
         <OutputType>Exe</OutputType>
         <Nullable>enable</Nullable>
         <PackAsTool>true</PackAsTool>
-        <PublishReadyToRun>true</PublishReadyToRun>
-        <RuntimeIdentifiers>linux-x64;win-x64;osx-x64;linux-arm64;win-arm64;osx-arm64</RuntimeIdentifiers>
+        <PublishReadyToRun Condition="'$(PortableBuild)' != 'true'">true</PublishReadyToRun>
+        <RuntimeIdentifiers Condition="'$(PortableBuild)' != 'true'">linux-x64;win-x64;osx-x64;linux-arm64;win-arm64;osx-arm64;linux-musl-x64;linux-musl-arm64</RuntimeIdentifiers>
         <RootNamespace>EditNET</RootNamespace>
         <PackageId>EditDotNet</PackageId>
         <ToolCommandName>Edit.NET</ToolCommandName>        
@@ -38,5 +38,10 @@
         <PackageReference Include="TextMateSharp.Grammars" Version="2.0.3" />
     </ItemGroup>
 
+    <Target Name="PackPortable" AfterTargets="Pack" Condition="'$(PortableBuild)' != 'true'">
+        <MSBuild Projects="$(MSBuildProjectFile)"
+                 Targets="Pack"
+                 Properties="PortableBuild=true;Configuration=$(Configuration);PackageOutputPath=$(PackageOutputAbsolutePath);ContinuousIntegrationBuild=$(ContinuousIntegrationBuild)" />
+    </Target>
     
 </Project>
