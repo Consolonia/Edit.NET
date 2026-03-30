@@ -25,7 +25,8 @@ namespace EditNET.Helpers
                 EnableVirtualSpace = false,
                 HighlightCurrentLine = true,
                 ShowSpaces = settings.ShowSpaces,
-                ShowTabs = settings.ShowTabs
+                ShowTabs = settings.ShowTabs,
+                LineHeightFactor = 1
             };
         }
 
