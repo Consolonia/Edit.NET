@@ -21,7 +21,7 @@
                        Text="A simple text editor built with Avalonia and Consolonia." />
             <TextBlock HorizontalAlignment="Center"
                        Margin="0,1,0,0"
-                       Text="https://github.com/jinek/consolonia" />
+                       Text="https://github.com/consolonia/Edit.NET" />
             <Separator />
             <Button HorizontalAlignment="Center"
                     MinWidth="6"

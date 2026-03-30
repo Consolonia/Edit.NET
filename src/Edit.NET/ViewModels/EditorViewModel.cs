@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Reactive;
 using System.Reactive.Linq;
@@ -100,7 +101,7 @@ namespace EditNET.ViewModels
             if (filePath == null)
                 return;
 
-            FilePath = Path.GetFullPath(filePath);
+            FilePath = Path.GetFullPath(filePath, Environment.CurrentDirectory);
             await SaveFileInternalAsync();
 
             await FocusEditorInteraction.Handle(Unit.Default);
@@ -115,24 +116,23 @@ namespace EditNET.ViewModels
 
         public async Task OpenFile(string path)
         {
+            if (!Path.IsPathFullyQualified(path))
+                path = Path.GetFullPath(path, Environment.CurrentDirectory);
             FilePath = path;
-            bool opened = false;
-            await HandleFileExceptions(async () =>
-            {
-                Document = new TextDocument(new StringTextSource(await File.ReadAllTextAsync(path)));
-                opened = true;
-            });
+            if (File.Exists(FilePath))
+                await HandleFileExceptions(async () =>
+                {
+                    Document = new TextDocument(new StringTextSource(await File.ReadAllTextAsync(path)));
+                });
 
-            if (opened)
-            {
-                string? directoryName = Path.GetDirectoryName(path);
-                if (!string.IsNullOrEmpty(directoryName)) // path can be in the current directory
-                    Directory.SetCurrentDirectory(directoryName);
-            }
+            string? directoryName = Path.GetDirectoryName(path);
+            if (!string.IsNullOrEmpty(directoryName)) // path can be in the current directory
+                Directory.SetCurrentDirectory(directoryName);
         }
 
         private async Task SaveFileInternalAsync()
         {
+            Debug.Assert(Path.IsPathFullyQualified(FilePath!));
             await HandleFileExceptions(async () => { await File.WriteAllTextAsync(FilePath!, Document.Text); });
             Modified = false;
             Directory.SetCurrentDirectory(Path.GetDirectoryName(FilePath!)!);

@@ -1,9 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Core.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+    <!--Overrides-->
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+    </PropertyGroup>
+    
+    <!--General-->
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <Nullable>enable</Nullable>
         <PackAsTool>true</PackAsTool>
+        <PublishReadyToRun Condition="'$(PortableBuild)' != 'true'">true</PublishReadyToRun>
+        <RuntimeIdentifiers Condition="'$(PortableBuild)' != 'true'">linux-x64;win-x64;osx-x64;linux-arm64;win-arm64;osx-arm64;linux-musl-x64;linux-musl-arm64</RuntimeIdentifiers>
         <RootNamespace>EditNET</RootNamespace>
         <PackageId>EditDotNet</PackageId>
         <ToolCommandName>Edit.NET</ToolCommandName>        
@@ -17,28 +25,24 @@
 
     <ItemGroup>
         <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
-        <PackageReference Include="Avalonia.AvaloniaEdit" Version="11.3.0" />
-        <PackageReference Include="AvaloniaEdit.TextMate" Version="11.3.0" />
+        <PackageReference Include="Avalonia.AvaloniaEdit" Version="11.4.1" />
+        <PackageReference Include="AvaloniaEdit.TextMate" Version="11.4.1" />
         <PackageReference Include="Avalonia.ReactiveUI" Version="11.3.9" />
         <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.0.4" />
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-        <PackageReference Include="Consolonia" Version="11.3.7-beta.2027" />
-        <PackageReference Include="Consolonia.AvaloniaEdit" Version="11.3.7-beta.2027" />
+        <PackageReference Include="Consolonia" Version="$(VersionPrefix)" />
+        <PackageReference Include="Consolonia.AvaloniaEdit" Version="$(VersionPrefix)" />
+        <PackageReference Include="Consolonia.ManagedWindows" Version="$(VersionPrefix)"/>
         <PackageReference Include="JetBrains.Annotations" Version="2025.2.2" />
-        <PackageReference Include="TextMateSharp" Version="1.0.70" />
-        <PackageReference Include="TextMateSharp.Grammars" Version="1.0.70" />
+        <PackageReference Include="TextMateSharp" Version="2.0.3" />
+        <PackageReference Include="TextMateSharp.Grammars" Version="2.0.3" />
     </ItemGroup>
 
-    <ItemGroup>
-        <Compile Update="EditorView.axaml.cs">
-            <DependentUpon>EditorView.axaml</DependentUpon>
-        </Compile>
-        <Compile Update="App.error.cs">
-          <DependentUpon>App.axaml</DependentUpon>
-        </Compile>
-        <Compile Update="Program.error.cs">
-          <DependentUpon>Program.cs</DependentUpon>
-        </Compile>
-    </ItemGroup>
+    <Target Name="PackPortable" AfterTargets="Pack"
+            Condition="'$(PortableBuild)' != 'true' AND '$(RuntimeIdentifier)' == ''">
+        <MSBuild Projects="$(MSBuildProjectFile)"
+                 Targets="Pack"
+                 Properties="PortableBuild=true;Configuration=$(Configuration);PackageOutputPath=$(PackageOutputAbsolutePath);ContinuousIntegrationBuild=$(ContinuousIntegrationBuild)" />
+    </Target>
     
 </Project>

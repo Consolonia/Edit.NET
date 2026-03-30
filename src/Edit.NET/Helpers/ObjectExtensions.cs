@@ -1,4 +1,4 @@
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace EditNET.Helpers
 {
@@ -6,8 +6,8 @@ namespace EditNET.Helpers
     {
         public static T SerializedCopy<T>(this T original)
         {
-            string serialized = JsonConvert.SerializeObject(original);
-            return JsonConvert.DeserializeObject<T>(serialized)!;
+            string serialized = JsonSerializer.Serialize(original);
+            return JsonSerializer.Deserialize<T>(serialized)!;
         }
     }
 }

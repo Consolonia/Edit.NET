@@ -3,6 +3,7 @@
 using System.Threading;
 using Avalonia;
 using Consolonia;
+using Consolonia.ManagedWindows.Storage;
 
 namespace EditNET
 {
@@ -23,6 +24,7 @@ namespace EditNET
                 .UseConsolonia()
                 .UseAutoDetectedConsole()
                 .WithDeveloperTools()
+                .UseConsoloniaStorage()
                 .LogToException();
         }
     }
