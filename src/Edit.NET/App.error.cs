@@ -86,6 +86,7 @@ namespace EditNET
 
             void CrashViaThreadPool()
             {
+                // ReSharper disable once AccessToModifiedClosure  It's intentionally!! Yes, we want to modify captured variable, why...
                 ThreadPool.QueueUserWorkItem(_ => throw wrappedException);
             }
         }
