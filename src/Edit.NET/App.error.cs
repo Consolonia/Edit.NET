@@ -63,17 +63,19 @@ namespace EditNET
                                 "Please restart the application. If you leave this dialog open it will close the application automatically in 30 seconds.\r\n",
                                 "Error details: ", exception.ToString()));
                     }
-                    catch
+                    catch (Exception secondaryException)
                     {
                         // crashing the application because dialog can not be shown
+                        wrappedException = new CrashAppException(new AggregateException(exception, secondaryException));
                         CrashViaThreadPool();
                         throw;
                     }
                 });
             }
-            catch
+            catch (Exception secondaryException)
             {
                 // crashing the application because dialog can not be shown
+                wrappedException = new CrashAppException(new AggregateException(exception, secondaryException));
                 CrashViaThreadPool();
                 throw;
             }
