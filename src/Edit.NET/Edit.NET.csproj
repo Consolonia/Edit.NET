@@ -44,5 +44,10 @@
                  Targets="Pack"
                  Properties="PortableBuild=true;Configuration=$(Configuration);PackageOutputPath=$(PackageOutputAbsolutePath);ContinuousIntegrationBuild=$(ContinuousIntegrationBuild)" />
     </Target>
+
+    <!--Overriding version prefix to be different from Consolonia-->
+    <PropertyGroup>
+        <VersionPrefix>11.3.10</VersionPrefix>
+    </PropertyGroup>
     
 </Project>
