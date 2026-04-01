@@ -109,9 +109,9 @@ namespace EditNET.Views
                 return;
             }
 
-            Language language =
+            Language? language =
                 ViewModel!.Syntax = _registryOptions.GetLanguageByExtension(Path.GetExtension(filePath));
-            string? scope = _registryOptions.GetScopeByLanguageId(language.Id);
+            string? scope = _registryOptions.GetScopeByLanguageId(language?.Id);
             _textMateInstallation.SetGrammar(scope);
         }
 
