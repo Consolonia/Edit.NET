@@ -47,7 +47,7 @@
 
     <!--Overriding version prefix to be different from Consolonia-->
     <PropertyGroup>
-        <VersionPrefix>11.3.10</VersionPrefix>
+        <Version>11.3.10</Version>
     </PropertyGroup>
     
 </Project>
