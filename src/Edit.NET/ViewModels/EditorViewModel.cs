@@ -133,9 +133,17 @@ namespace EditNET.ViewModels
         private async Task SaveFileInternalAsync()
         {
             Debug.Assert(Path.IsPathFullyQualified(FilePath!));
-            await HandleFileExceptions(async () => { await File.WriteAllTextAsync(FilePath!, Document.Text); });
-            Modified = false;
-            Directory.SetCurrentDirectory(Path.GetDirectoryName(FilePath!)!);
+            bool succeeded = false;
+            await HandleFileExceptions(async () =>
+            {
+                await File.WriteAllTextAsync(FilePath!, Document.Text);
+                succeeded = true;
+            });
+            if (succeeded)
+            {
+                Modified = false;
+                Directory.SetCurrentDirectory(Path.GetDirectoryName(FilePath!)!);
+            }
         }
 
         private async Task<bool> CheckSaved()
