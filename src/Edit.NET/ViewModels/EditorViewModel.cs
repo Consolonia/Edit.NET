@@ -140,11 +140,17 @@ namespace EditNET.ViewModels
 
         private async Task<bool> CheckSaved()
         {
-            if (Modified)
-                return await MessageBoxInteraction.Handle(new MessageBoxModel("Unsaved Changes",
-                    "You have unsaved changes. Do you want to discard them?", MessageBoxButtons.YesNo));
+            if (!Modified)
+                return true;
 
-            return true;
+            bool shouldSave = await MessageBoxInteraction.Handle(new MessageBoxModel("Unsaved Changes",
+                "You have unsaved changes. Do you want to save them?", MessageBoxButtons.YesNo));
+
+            if (!shouldSave)
+                return true;
+
+            await SaveCommand();
+            return !Modified;
         }
 
         private async Task HandleFileExceptions(Func<Task> action)
