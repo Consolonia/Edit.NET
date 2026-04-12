@@ -125,7 +125,10 @@ namespace EditNET.Views
                     await storageProvider.TryGetFolderFromPathAsync(Directory.GetCurrentDirectory()),
                 Title = "Open File"
             });
+            
+            // ReSharper disable ConditionalAccessQualifierIsNonNullableAccordingToAPIContract todo: check why we declare not to be null while returning null
             if (files?.Count > 0)
+                // ReSharper restore ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
             {
                 IStorageFile file = files[0];
                 interactionContext.SetOutput(file.Path.AbsolutePath);
