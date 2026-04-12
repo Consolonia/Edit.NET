@@ -125,7 +125,7 @@ namespace EditNET.Views
                     await storageProvider.TryGetFolderFromPathAsync(Directory.GetCurrentDirectory()),
                 Title = "Open File"
             });
-            if (files.Count > 0)
+            if (files?.Count > 0)
             {
                 IStorageFile file = files[0];
                 interactionContext.SetOutput(file.Path.AbsolutePath);
@@ -162,7 +162,7 @@ namespace EditNET.Views
             Dispatcher.UIThread.Post(_ => { Editor.TextArea.Focus(); }, null);
         }
 
-        private static async Task MessageBoxHandler(IInteractionContext<MessageBoxModel, bool> interactionContext)
+        private static async Task MessageBoxHandler(IInteractionContext<MessageBoxModel, MessageBoxResult> interactionContext)
         {
             MessageBoxResult result = await MessageBox.ShowDialog(interactionContext.Input.Title,
                 interactionContext.Input.Message,
@@ -174,7 +174,7 @@ namespace EditNET.Views
                     _ => throw new NotSupportedException("Unsupported MessageBoxButtons value: " +
                                                          interactionContext.Input.Buttons)
                 });
-            interactionContext.SetOutput(result is MessageBoxResult.Ok or MessageBoxResult.Yes);
+            interactionContext.SetOutput(result);
         }
 
         private void UpdateStatus()
