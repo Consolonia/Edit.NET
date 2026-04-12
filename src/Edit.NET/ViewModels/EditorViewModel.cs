@@ -35,7 +35,7 @@ namespace EditNET.ViewModels
             _settings = new Settings();
         }
 
-        public Interaction<MessageBoxModel, bool> MessageBoxInteraction { get; } = new();
+        public Interaction<MessageBoxModel, Avalonia.Controls.MessageBoxResult> MessageBoxInteraction { get; } = new();
         public Interaction<Unit, Unit> FocusEditorInteraction { get; } = new();
         public Interaction<Unit, string?> OpenFileInteraction { get; } = new();
         public Interaction<Unit, string?> SaveFileInteraction { get; } = new();
@@ -151,10 +151,13 @@ namespace EditNET.ViewModels
             if (!Modified)
                 return true;
 
-            bool shouldSave = await MessageBoxInteraction.Handle(new MessageBoxModel("Unsaved Changes",
-                "You have unsaved changes. Do you want to save them?", MessageBoxButtons.YesNo));
+            var result = await MessageBoxInteraction.Handle(new MessageBoxModel("Unsaved Changes",
+                "You have unsaved changes. Do you want to save them?", MessageBoxButtons.YesNoCancel));
 
-            if (!shouldSave)
+            if (result == Avalonia.Controls.MessageBoxResult.Cancel)
+                return false;
+
+            if (result == Avalonia.Controls.MessageBoxResult.No)
                 return true;
 
             await SaveCommand();
