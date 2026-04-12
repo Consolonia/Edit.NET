@@ -162,19 +162,20 @@ namespace EditNET.Views
             Dispatcher.UIThread.Post(_ => { Editor.TextArea.Focus(); }, null);
         }
 
-        private static async Task MessageBoxHandler(IInteractionContext<MessageBoxModel, bool> interactionContext)
+        private static async Task MessageBoxHandler(IInteractionContext<MessageBoxModel, MessageBoxResult> interactionContext)
         {
             MessageBoxResult result = await MessageBox.ShowDialog(interactionContext.Input.Title,
                 interactionContext.Input.Message,
                 interactionContext.Input.Buttons switch
                 {
                     MessageBoxButtons.OkCancel => MessageBoxStyle.OkCancel,
-                    MessageBoxButtons.YesNo => MessageBoxStyle.YesNoCancel,
+                    MessageBoxButtons.YesNoCancel => MessageBoxStyle.YesNoCancel,
+                    MessageBoxButtons.YesNo => MessageBoxStyle.YesNo,
                     MessageBoxButtons.Ok => MessageBoxStyle.Ok,
                     _ => throw new NotSupportedException("Unsupported MessageBoxButtons value: " +
                                                          interactionContext.Input.Buttons)
                 });
-            interactionContext.SetOutput(result is MessageBoxResult.Ok or MessageBoxResult.Yes);
+            interactionContext.SetOutput(result);
         }
 
         private void UpdateStatus()
