@@ -26,7 +26,7 @@ namespace EditNET.Views
             this.CloseModal();
         }
 
-        private void Control_OnLoaded(object? sender, RoutedEventArgs e)
+        private void Control_OnLoaded(object sender, RoutedEventArgs e)
         {
             ((Button)sender).Focus();
         }
