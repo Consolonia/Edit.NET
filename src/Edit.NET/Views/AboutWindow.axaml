@@ -5,7 +5,8 @@
                     x:Class="EditNET.Views.AboutWindow"
                     Title="{Binding Source={x:Static viewModels:AppViewModel.EditNetTitle}, StringFormat='About {0}'}"
                     HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
+                    VerticalAlignment="Center"
+                    Icon="{StaticResource Icon_Certificate}">
     <Border Padding="1,1,1,0">
         <StackPanel>
             <StackPanel.Styles>
@@ -27,14 +28,17 @@
                        Margin="0,1,0,0"
                        Text="https://github.com/consolonia/Edit.NET" />
             <Separator />
-            <Button HorizontalAlignment="Center"
+            <Grid HorizontalAlignment="Center" Height="2">
+                <!--Grid is necessary to fix height to 2 for any theme-->
+                <Button VerticalAlignment="Top"
                     MinWidth="6"
                     Content="OK"
                     IsDefault="True"
                     IsCancel="True"
                     Loaded="Control_OnLoaded"
                     Click="Ok_OnClick">
-            </Button>
+                </Button>
+            </Grid>
         </StackPanel>
     </Border>
 </modal:ModalWindow>
