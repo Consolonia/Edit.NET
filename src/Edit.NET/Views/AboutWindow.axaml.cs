@@ -1,10 +1,12 @@
+using System;
 using System.Reflection;
+using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Iciclecreek.Avalonia.WindowManager;
+using Consolonia.Modal;
 
 namespace EditNET.Views
 {
-    public partial class AboutWindow : ManagedWindow
+    public partial class AboutWindow : ModalWindow
     {
         public AboutWindow()
         {
@@ -21,7 +23,12 @@ namespace EditNET.Views
 
         private void Ok_OnClick(object? sender, RoutedEventArgs e)
         {
-            Close();
+            this.CloseModal();
+        }
+
+        private void Control_OnLoaded(object? sender, RoutedEventArgs e)
+        {
+            ((Button)sender).Focus();
         }
     }
 }

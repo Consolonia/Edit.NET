@@ -18,6 +18,7 @@ using AvaloniaEdit.Indentation.CSharp;
 using AvaloniaEdit.TextMate;
 using Consolonia;
 using Consolonia.Controls;
+using Consolonia.Modal;
 using EditNET.DataModels;
 using EditNET.Helpers;
 using EditNET.ViewModels;
@@ -161,6 +162,11 @@ namespace EditNET.Views
         private async void FocusEditorHandler(IInteractionContext<Unit, Unit> context)
         {
             context.SetOutput(Unit.Default);
+            await FocusInternal();
+        }
+
+        private async Task FocusInternal()
+        {
             await Task.Delay(500); // todo: low magic number, I don't know how to make focus working
             Dispatcher.UIThread.Post(_ => { Editor.TextArea.Focus(); }, null);
         }
@@ -240,9 +246,10 @@ namespace EditNET.Views
             }
         }
 
-        private void MenuItem_OnClick(object? sender, RoutedEventArgs e)
+        private async void MenuItem_OnClick(object? sender, RoutedEventArgs e)
         {
-            new AboutWindow().ShowDialog(this);
+            await new AboutWindow().ShowModalAsync(this);
+            await FocusInternal();
         }
 
         private async void OnShowSettings(object? sender, RoutedEventArgs e)

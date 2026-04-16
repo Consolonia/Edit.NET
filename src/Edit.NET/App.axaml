@@ -2,9 +2,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:console="https://github.com/jinek/consolonia"
              xmlns:managedWindows="clr-namespace:Consolonia.ManagedWindows;assembly=Consolonia.ManagedWindows"
+             xmlns:modal="clr-namespace:Consolonia.Modal;assembly=Consolonia.Modal"
              x:Class="EditNET.App">
     <Application.Styles>
         <console:TurboVisionCompatibleTheme />
+        <modal:ModalTheme />
         <StyleInclude Source="avares://Consolonia.AvaloniaEdit/Theme.axaml" />
         <managedWindows:AutoManagedWindowStyles />
     </Application.Styles>
