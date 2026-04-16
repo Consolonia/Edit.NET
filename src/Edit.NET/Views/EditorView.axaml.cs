@@ -18,7 +18,6 @@ using AvaloniaEdit.Indentation.CSharp;
 using AvaloniaEdit.TextMate;
 using Consolonia;
 using Consolonia.Controls;
-using Consolonia.Modal;
 using EditNET.DataModels;
 using EditNET.Helpers;
 using EditNET.ViewModels;
@@ -256,11 +255,8 @@ namespace EditNET.Views
         {
             var dlg = new EditSettingsDialog(ViewModel!.Settings.SerializedCopy());
             await dlg.ShowModalAsync(this);
-            var newSettings = dlg.Result;
-            if (newSettings != null)
-            {
-                ViewModel.Settings = newSettings;
-            }
+            Settings? newSettings = dlg.Result;
+            if (newSettings != null) ViewModel.Settings = newSettings;
             await FocusInternal();
         }
 

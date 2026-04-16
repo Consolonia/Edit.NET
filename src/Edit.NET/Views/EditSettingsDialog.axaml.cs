@@ -10,8 +10,6 @@ namespace EditNET.Views
 {
     public partial class EditSettingsDialog : ModalWindow
     {
-        public Settings? Result { get; private set; }
-
         [UsedImplicitly]
         public EditSettingsDialog()
         {
@@ -25,16 +23,18 @@ namespace EditNET.Views
             DataContext = new EditSettingsViewModel(settings);
         }
 
+        public Settings? Result { get; private set; }
+
         private void OnOk(object sender, RoutedEventArgs e)
         {
             Result = ((EditSettingsViewModel)DataContext!).Settings;
-            this.CloseModal();
+            CloseModal();
         }
 
         private void OnCancel(object sender, RoutedEventArgs e)
         {
             Result = null;
-            this.CloseModal();
+            CloseModal();
         }
     }
 }

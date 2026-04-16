@@ -1,21 +1,18 @@
 using System;
 using Avalonia;
-using Avalonia.Interactivity;
-using Consolonia.Modal;
 using Avalonia.Controls;
-using System.Threading.Tasks;
 using Avalonia.Controls.ApplicationLifetimes;
-
+using Avalonia.Interactivity;
 using Avalonia.Threading;
-using System.Diagnostics;
+using Consolonia.Modal;
 
 namespace EditNET.Views
 {
     public partial class ErrorWindow : ModalWindow
     {
         private readonly Exception? _exception;
-        private int _secondsRemaining = Program.ShutdownTimeoutSeconds;
         private readonly DispatcherTimer _timer;
+        private int _secondsRemaining = Program.ShutdownTimeoutSeconds;
 
         public ErrorWindow()
         {
@@ -43,6 +40,7 @@ namespace EditNET.Views
                 _timer.Stop();
                 return;
             }
+
             UpdateTimerText();
         }
 
@@ -54,9 +52,9 @@ namespace EditNET.Views
         private async void OnReportAndClose(object? sender, RoutedEventArgs e)
         {
             _timer.Stop();
-            
+
             var topLevel = TopLevel.GetTopLevel(this);
-            if (topLevel?.Clipboard != null) 
+            if (topLevel?.Clipboard != null)
                 await topLevel.Clipboard.SetTextAsync(ExceptionTextBox.Text);
 
             if (topLevel?.Launcher != null)
@@ -79,7 +77,7 @@ namespace EditNET.Views
         private void OnClose(object? sender, RoutedEventArgs e)
         {
             _timer.Stop();
-            this.CloseModal();
+            CloseModal();
         }
 
         private void DefaultButton_OnLoaded(object? sender, RoutedEventArgs e)

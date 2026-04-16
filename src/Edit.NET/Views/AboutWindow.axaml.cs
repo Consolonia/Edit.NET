@@ -1,4 +1,3 @@
-using System;
 using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -23,7 +22,7 @@ namespace EditNET.Views
 
         private void Ok_OnClick(object? sender, RoutedEventArgs e)
         {
-            this.CloseModal();
+            CloseModal();
         }
 
         private void Control_OnLoaded(object sender, RoutedEventArgs e)

@@ -4,8 +4,6 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Threading;
-using Consolonia.Controls;
-using Consolonia.Modal;
 using EditNET.Helpers;
 using EditNET.Views;
 
@@ -61,7 +59,7 @@ namespace EditNET
                 {
                     try
                     {
-                        var desktop = Avalonia.Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime;
+                        var desktop = Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime;
                         Window? mainWindow = desktop?.MainWindow;
 
                         if (mainWindow != null)
