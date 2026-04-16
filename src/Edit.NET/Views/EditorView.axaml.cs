@@ -255,12 +255,13 @@ namespace EditNET.Views
         private async void OnShowSettings(object? sender, RoutedEventArgs e)
         {
             var dlg = new EditSettingsDialog(ViewModel!.Settings.SerializedCopy());
-            var newSettings = await dlg.ShowDialog<Settings?>(this);
+            await dlg.ShowModalAsync(this);
+            var newSettings = dlg.Result;
             if (newSettings != null)
             {
                 ViewModel.Settings = newSettings;
-                Editor.TextArea.Focus();
             }
+            await FocusInternal();
         }
 
         private void EditMenu_OnSubmenuOpened(object sender, RoutedEventArgs e)

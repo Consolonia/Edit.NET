@@ -1,15 +1,17 @@
 using Avalonia;
 using Avalonia.Interactivity;
 using Consolonia;
+using Consolonia.Modal;
 using EditNET.DataModels;
 using EditNET.ViewModels;
-using Iciclecreek.Avalonia.WindowManager;
 using JetBrains.Annotations;
 
 namespace EditNET.Views
 {
-    public partial class EditSettingsDialog : ManagedWindow
+    public partial class EditSettingsDialog : ModalWindow
     {
+        public Settings? Result { get; private set; }
+
         [UsedImplicitly]
         public EditSettingsDialog()
         {
@@ -25,12 +27,14 @@ namespace EditNET.Views
 
         private void OnOk(object sender, RoutedEventArgs e)
         {
-            Close(((EditSettingsViewModel)DataContext!).Settings);
+            Result = ((EditSettingsViewModel)DataContext!).Settings;
+            this.CloseModal();
         }
 
         private void OnCancel(object sender, RoutedEventArgs e)
         {
-            Close(null);
+            Result = null;
+            this.CloseModal();
         }
     }
 }
