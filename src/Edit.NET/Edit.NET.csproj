@@ -23,10 +23,6 @@
         <DefineConstants>$(DefineConstants);HANDLE_CRASH</DefineConstants>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-      <DefineConstants>TRACE;HANDLE_CRASH</DefineConstants>
-    </PropertyGroup>
-
     <ItemGroup>
         <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
         <PackageReference Include="Avalonia.AvaloniaEdit" Version="11.4.1" />
