@@ -43,13 +43,16 @@
 
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Right"
+                        Height="2"
                         Spacing="1">
-                <Button x:Name="TerminateAndPrintButton" 
-                    Content="Terminate and Print"
-                        Click="OnCloseAndPrint" />
+                <Button x:Name="TerminateAndPrintButton"
+                        Content="Terminate and Print"
+                        Click="OnCloseAndPrint"
+                        VerticalAlignment="Top" />
                 <Button Content="Ignore"
                         Click="OnClose"
-                        IsCancel="True" />
+                        IsCancel="True"
+                        VerticalAlignment="Top" />
             </StackPanel>
         </StackPanel>
     </Border>
