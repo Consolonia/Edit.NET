@@ -6,7 +6,7 @@
                    Icon="{StaticResource Icon_Warning}"
                    HorizontalAlignment="Center"
                    VerticalAlignment="Center">
-    <Border Padding="1"
+    <Border Padding="1,1,1,0"
             XYFocus.NavigationModes="Keyboard">
         <StackPanel Spacing="1"
                     MaxWidth="80">
