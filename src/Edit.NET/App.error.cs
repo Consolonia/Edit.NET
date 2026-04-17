@@ -1,9 +1,11 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Threading;
-using Consolonia.Controls;
 using EditNET.Helpers;
+using EditNET.Views;
 
 namespace EditNET
 {
@@ -43,7 +45,7 @@ namespace EditNET
             var tsc = new CancellationTokenSource();
             var wrappedException = new CrashAppException(exception);
 
-            _ = Task.Delay(TimeSpan.FromSeconds(30), tsc.Token)
+            _ = Task.Delay(TimeSpan.FromSeconds(Program.ShutdownTimeoutSeconds), tsc.Token)
                 .ContinueWith(_ =>
                     {
                         // this does not write exception to output: Environment.FailFast(null, exception);
@@ -57,11 +59,13 @@ namespace EditNET
                 {
                     try
                     {
-                        //todo: we need better dialog
-                        await MessageBox.ShowDialog("Unexpected Error",
-                            string.Concat("An unexpected error has occurred. We apologize for the inconvenience.\\r\\n",
-                                "Please restart the application. If you leave this dialog open it will close the application automatically in 30 seconds.\r\n",
-                                "Error details: ", exception.ToString()));
+                        var desktop = Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime;
+                        Window? mainWindow = desktop?.MainWindow;
+
+                        if (mainWindow != null)
+                            await new ErrorWindow(exception).ShowModalAsync(mainWindow);
+                        else
+                            CrashViaThreadPool();
                     }
                     catch (Exception secondaryException)
                     {

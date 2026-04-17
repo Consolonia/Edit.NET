@@ -161,6 +161,11 @@ namespace EditNET.Views
         private async void FocusEditorHandler(IInteractionContext<Unit, Unit> context)
         {
             context.SetOutput(Unit.Default);
+            await FocusInternal();
+        }
+
+        private async Task FocusInternal()
+        {
             await Task.Delay(500); // todo: low magic number, I don't know how to make focus working
             Dispatcher.UIThread.Post(_ => { Editor.TextArea.Focus(); }, null);
         }
@@ -240,20 +245,19 @@ namespace EditNET.Views
             }
         }
 
-        private void MenuItem_OnClick(object? sender, RoutedEventArgs e)
+        private async void MenuItem_OnClick(object? sender, RoutedEventArgs e)
         {
-            new AboutWindow().ShowDialog(this);
+            await new AboutWindow().ShowModalAsync(this);
+            await FocusInternal();
         }
 
         private async void OnShowSettings(object? sender, RoutedEventArgs e)
         {
             var dlg = new EditSettingsDialog(ViewModel!.Settings.SerializedCopy());
-            var newSettings = await dlg.ShowDialog<Settings?>(this);
-            if (newSettings != null)
-            {
-                ViewModel.Settings = newSettings;
-                Editor.TextArea.Focus();
-            }
+            await dlg.ShowModalAsync(this);
+            Settings? newSettings = dlg.Result;
+            if (newSettings != null) ViewModel.Settings = newSettings;
+            await FocusInternal();
         }
 
         private void EditMenu_OnSubmenuOpened(object sender, RoutedEventArgs e)

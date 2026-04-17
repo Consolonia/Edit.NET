@@ -33,6 +33,7 @@
         <PackageReference Include="Consolonia" Version="$(ConsoloniaVersionLatest)" />
         <PackageReference Include="Consolonia.AvaloniaEdit" Version="$(ConsoloniaVersionLatest)" />
         <PackageReference Include="Consolonia.ManagedWindows" Version="$(ConsoloniaVersionLatest)"/>
+        <PackageReference Include="Consolonia.Modal" Version="11.3.12.5" />
         <PackageReference Include="JetBrains.Annotations" Version="2025.2.2" />
         <PackageReference Include="TextMateSharp" Version="2.0.3" />
         <PackageReference Include="TextMateSharp.Grammars" Version="2.0.3" />
