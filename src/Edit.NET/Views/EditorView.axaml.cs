@@ -125,7 +125,10 @@ namespace EditNET.Views
                     await storageProvider.TryGetFolderFromPathAsync(Directory.GetCurrentDirectory()),
                 Title = "Open File"
             });
-            if (files.Count > 0)
+
+            // ReSharper disable ConditionalAccessQualifierIsNonNullableAccordingToAPIContract todo: check why we declare not to be null while returning null
+            if (files?.Count > 0)
+                // ReSharper restore ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
             {
                 IStorageFile file = files[0];
                 interactionContext.SetOutput(file.Path.AbsolutePath);
@@ -158,11 +161,17 @@ namespace EditNET.Views
         private async void FocusEditorHandler(IInteractionContext<Unit, Unit> context)
         {
             context.SetOutput(Unit.Default);
+            await FocusInternal();
+        }
+
+        private async Task FocusInternal()
+        {
             await Task.Delay(500); // todo: low magic number, I don't know how to make focus working
             Dispatcher.UIThread.Post(_ => { Editor.TextArea.Focus(); }, null);
         }
 
-        private static async Task MessageBoxHandler(IInteractionContext<MessageBoxModel, bool> interactionContext)
+        private static async Task MessageBoxHandler(
+            IInteractionContext<MessageBoxModel, MessageBoxResult> interactionContext)
         {
             MessageBoxResult result = await MessageBox.ShowDialog(interactionContext.Input.Title,
                 interactionContext.Input.Message,
@@ -174,7 +183,7 @@ namespace EditNET.Views
                     _ => throw new NotSupportedException("Unsupported MessageBoxButtons value: " +
                                                          interactionContext.Input.Buttons)
                 });
-            interactionContext.SetOutput(result is MessageBoxResult.Ok or MessageBoxResult.Yes);
+            interactionContext.SetOutput(result);
         }
 
         private void UpdateStatus()
@@ -236,20 +245,19 @@ namespace EditNET.Views
             }
         }
 
-        private void MenuItem_OnClick(object? sender, RoutedEventArgs e)
+        private async void MenuItem_OnClick(object? sender, RoutedEventArgs e)
         {
-            new AboutWindow().ShowDialog(this);
+            await new AboutWindow().ShowModalAsync(this);
+            await FocusInternal();
         }
 
         private async void OnShowSettings(object? sender, RoutedEventArgs e)
         {
             var dlg = new EditSettingsDialog(ViewModel!.Settings.SerializedCopy());
-            var newSettings = await dlg.ShowDialog<Settings?>(this);
-            if (newSettings != null)
-            {
-                ViewModel.Settings = newSettings;
-                Editor.TextArea.Focus();
-            }
+            await dlg.ShowModalAsync(this);
+            Settings? newSettings = dlg.Result;
+            if (newSettings != null) ViewModel.Settings = newSettings;
+            await FocusInternal();
         }
 
         private void EditMenu_OnSubmenuOpened(object sender, RoutedEventArgs e)

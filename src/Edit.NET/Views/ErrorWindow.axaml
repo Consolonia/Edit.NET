@@ -1,0 +1,59 @@
+<modal:ModalWindow xmlns="https://github.com/avaloniaui"
+                   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                   xmlns:modal="clr-namespace:Consolonia.Modal;assembly=Consolonia.Modal"
+                   x:Class="EditNET.Views.ErrorWindow"
+                   Title="Unexpected Error"
+                   Icon="{StaticResource Icon_Warning}"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center">
+    <Border Padding="1,1,1,0"
+            XYFocus.NavigationModes="Keyboard">
+        <StackPanel Spacing="1"
+                    MaxWidth="80">
+            <TextBlock
+                Text="An internal error has occurred within the application. We apologize for any inconvenience caused."
+                TextWrapping="Wrap" />
+
+            <TextBlock x:Name="CorruptionWarningText"
+                       TextWrapping="Wrap"
+                       Foreground="{DynamicResource ThemeNoDisturbBrush}">
+                <Run>To prevent potential data corruption, the application will be automatically terminated in </Run>
+                <Run x:Name="TimerSpan"
+                     Foreground="{DynamicResource ThemeErrorBrush}" />
+                <Run> seconds.</Run>
+            </TextBlock>
+
+            <HyperlinkButton x:Name="ReportAndCloseButton"
+                             Click="OnReportAndClose"
+                             IsDefault="True"
+                             HorizontalAlignment="Stretch"
+                             Loaded="DefaultButton_OnLoaded">
+                <TextBlock Text="Please report this issue on GitHub: https://github.com/Consolonia/Edit.NET/issues/new"
+                           TextWrapping="Wrap" />
+            </HyperlinkButton>
+
+            <Expander Header="Exception Details"
+                      HorizontalAlignment="Stretch">
+                <TextBox x:Name="ExceptionTextBox"
+                         IsReadOnly="True"
+                         TextWrapping="Wrap"
+                         AcceptsReturn="True"
+                         MaxHeight="10" />
+            </Expander>
+
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Height="2"
+                        Spacing="1">
+                <Button x:Name="TerminateAndPrintButton"
+                        Content="Terminate and Print"
+                        Click="OnCloseAndPrint"
+                        VerticalAlignment="Top" />
+                <Button Content="Ignore"
+                        Click="OnClose"
+                        IsCancel="True"
+                        VerticalAlignment="Top" />
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</modal:ModalWindow>

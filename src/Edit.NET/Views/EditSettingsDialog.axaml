@@ -1,17 +1,16 @@
-<windowManager:ManagedWindow xmlns="https://github.com/avaloniaui"
-                             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-                             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                             xmlns:windowManager="clr-namespace:Iciclecreek.Avalonia.WindowManager;assembly=Iciclecreek.Avalonia.WindowManager"
-                             xmlns:viewModels="clr-namespace:EditNET.ViewModels"
-                             mc:Ignorable="d"
-                             x:Class="EditNET.Views.EditSettingsDialog"
-                             Title="Preferences"
-                             SizeToContent="WidthAndHeight"
-                             WindowStartupLocation="CenterOwner"
-                             WindowState="Normal"
-                             d:DataContext="{viewModels:EditSettingsViewModel}"
-                             x:DataType="viewModels:EditSettingsViewModel">
+<modal:ModalWindow xmlns="https://github.com/avaloniaui"
+                   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                   xmlns:modal="clr-namespace:Consolonia.Modal;assembly=Consolonia.Modal"
+                   xmlns:viewModels="clr-namespace:EditNET.ViewModels"
+                   mc:Ignorable="d"
+                   x:Class="EditNET.Views.EditSettingsDialog"
+                   Title="Preferences"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   d:DataContext="{viewModels:EditSettingsViewModel}"
+                   x:DataType="viewModels:EditSettingsViewModel">
     <StackPanel d:DataContext="{viewModels:EditSettingsViewModel}"
                 x:DataType="viewModels:EditSettingsViewModel">
         <TextBlock x:Name="CompatibilityErrorTxt"
@@ -76,4 +75,4 @@
                     Margin="1" />
         </StackPanel>
     </StackPanel>
-</windowManager:ManagedWindow>
+</modal:ModalWindow>

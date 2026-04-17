@@ -6,6 +6,7 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using AvaloniaEdit.Document;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Consolonia.Controls;
 using EditNET.DataModels;
 using JetBrains.Annotations;
 using ReactiveUI;
@@ -35,7 +36,7 @@ namespace EditNET.ViewModels
             _settings = new Settings();
         }
 
-        public Interaction<MessageBoxModel, bool> MessageBoxInteraction { get; } = new();
+        public Interaction<MessageBoxModel, MessageBoxResult> MessageBoxInteraction { get; } = new();
         public Interaction<Unit, Unit> FocusEditorInteraction { get; } = new();
         public Interaction<Unit, string?> OpenFileInteraction { get; } = new();
         public Interaction<Unit, string?> SaveFileInteraction { get; } = new();
@@ -64,7 +65,10 @@ namespace EditNET.ViewModels
         public async Task NewCommand()
         {
             if (!await CheckSaved())
+            {
+                await FocusEditorInteraction.Handle(Unit.Default);
                 return;
+            }
 
             Document = new TextDocument();
             FilePath = null;
@@ -75,11 +79,17 @@ namespace EditNET.ViewModels
         public async Task OpenCommand()
         {
             if (!await CheckSaved())
+            {
+                await FocusEditorInteraction.Handle(Unit.Default);
                 return;
+            }
 
             string? filePath = await OpenFileInteraction.Handle(Unit.Default);
             if (filePath == null)
+            {
+                await FocusEditorInteraction.Handle(Unit.Default);
                 return;
+            }
 
             await OpenFile(Path.GetFullPath(filePath));
 
@@ -110,7 +120,11 @@ namespace EditNET.ViewModels
         public async Task ExitCommand()
         {
             if (!await CheckSaved())
+            {
+                await FocusEditorInteraction.Handle(Unit.Default);
                 return;
+            }
+
             await ShutdownInteraction.Handle(Unit.Default);
         }
 
@@ -133,18 +147,35 @@ namespace EditNET.ViewModels
         private async Task SaveFileInternalAsync()
         {
             Debug.Assert(Path.IsPathFullyQualified(FilePath!));
-            await HandleFileExceptions(async () => { await File.WriteAllTextAsync(FilePath!, Document.Text); });
-            Modified = false;
-            Directory.SetCurrentDirectory(Path.GetDirectoryName(FilePath!)!);
+            bool succeeded = false;
+            await HandleFileExceptions(async () =>
+            {
+                await File.WriteAllTextAsync(FilePath!, Document.Text);
+                succeeded = true;
+            });
+            if (succeeded)
+            {
+                Modified = false;
+                Directory.SetCurrentDirectory(Path.GetDirectoryName(FilePath!)!);
+            }
         }
 
         private async Task<bool> CheckSaved()
         {
-            if (Modified)
-                return await MessageBoxInteraction.Handle(new MessageBoxModel("Unsaved Changes",
-                    "You have unsaved changes. Do you want to discard them?", MessageBoxButtons.YesNo));
+            if (!Modified)
+                return true;
 
-            return true;
+            MessageBoxResult shouldSave = await MessageBoxInteraction.Handle(new MessageBoxModel("Unsaved Changes",
+                "You have unsaved changes. Do you want to save them?", MessageBoxButtons.YesNo));
+
+            if (shouldSave == MessageBoxResult.Cancel)
+                return false;
+
+            if (shouldSave == MessageBoxResult.No)
+                return true;
+
+            await SaveCommand();
+            return !Modified;
         }
 
         private async Task HandleFileExceptions(Func<Task> action)
