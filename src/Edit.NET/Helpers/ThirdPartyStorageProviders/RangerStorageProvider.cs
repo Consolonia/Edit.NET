@@ -1,59 +1,30 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 
 namespace EditNET.Helpers.ThirdPartyStorageProviders
 {
-    public class RangerStorageProvider : IStorageProvider
+    public class RangerStorageProvider() : FileManagerStorageProviderBase("ranger")
     {
-        public Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options)
+        protected override string GetFileOpenArguments(FilePickerOpenOptions options, string tempFilePath)
         {
-            throw new NotImplementedException();
+            return GetArgumentsInternal(options, tempFilePath);
         }
 
-        public Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options)
+        protected override string GetFileSaveArguments(FilePickerSaveOptions options, string tempFilePath)
         {
-            throw new NotImplementedException();
+            return GetArgumentsInternal(options, tempFilePath);
         }
 
-        public Task<SaveFilePickerResult> SaveFilePickerWithResultAsync(FilePickerSaveOptions options)
+        private static string GetArgumentsInternal(PickerOptions options, string tempFilePath)
         {
-            throw new NotImplementedException();
-        }
+            string locationArgument = string.Empty;
+            IStorageFolder? suggestedStartLocation = options.SuggestedStartLocation;
 
-        public Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options)
-        {
-            throw new NotImplementedException();
-        }
+            if (suggestedStartLocation != null)
+            {
+                locationArgument = $"\"{suggestedStartLocation.Path.LocalPath}\"";
+            }
 
-        public Task<IStorageBookmarkFile?> OpenFileBookmarkAsync(string bookmark)
-        {
-            throw new NotImplementedException();
+            return $"{locationArgument} --choosefile=\"{tempFilePath}\"";
         }
-
-        public Task<IStorageBookmarkFolder?> OpenFolderBookmarkAsync(string bookmark)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IStorageFile?> TryGetFileFromPathAsync(Uri filePath)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IStorageFolder?> TryGetFolderFromPathAsync(Uri folderPath)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IStorageFolder?> TryGetWellKnownFolderAsync(WellKnownFolder wellKnownFolder)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool CanOpen { get; }
-        public bool CanSave { get; }
-        public bool CanPickFolder { get; }
     }
 }
