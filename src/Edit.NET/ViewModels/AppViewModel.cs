@@ -22,6 +22,7 @@ namespace EditNET.ViewModels
 
         private ConsoloniaTheme _consoloniaTheme;
         private bool _consoloniaThemeLight;
+        private string _filePicker;
 
         public AppViewModel()
         {
@@ -42,6 +43,7 @@ namespace EditNET.ViewModels
             settings ??= new Settings();
             _consoloniaTheme = settings.ConsoloniaTheme;
             _consoloniaThemeLight = settings.LightVariant;
+            _filePicker = settings.FilePicker;
             EditorViewModel = new EditorViewModel(settings);
             EditorViewModel.WhenAnyValue(model => model.Settings).Skip(1).Subscribe(OnSettingsUpdated);
         }
@@ -49,6 +51,7 @@ namespace EditNET.ViewModels
         public EditorViewModel EditorViewModel { get; }
         public Interaction<(ConsoloniaTheme, bool), Unit> SetThemeInteraction { get; } = new();
         public Interaction<Notification, Unit> ShowNotificationInteraction { get; } = new();
+        public Interaction<Unit, Unit> SetStorageProviderInteraction { get; } = new();
         public Exception? InitialLoadSettingsException { get; }
 
         private void OnSettingsUpdated(Settings settings)

@@ -11,8 +11,7 @@
                    VerticalAlignment="Center"
                    d:DataContext="{viewModels:EditSettingsViewModel}"
                    x:DataType="viewModels:EditSettingsViewModel">
-    <StackPanel d:DataContext="{viewModels:EditSettingsViewModel}"
-                x:DataType="viewModels:EditSettingsViewModel">
+    <StackPanel>
         <TextBlock x:Name="CompatibilityErrorTxt"
                    IsVisible="False"
                    Margin="1,0"
@@ -58,6 +57,18 @@
                         <ToggleSwitch.OnContent>Light mode</ToggleSwitch.OnContent>
                         <ToggleSwitch.OffContent>Dark mode</ToggleSwitch.OffContent>
                     </ToggleSwitch>
+                </StackPanel>
+            </TabItem>
+
+            <TabItem Header="Experimental">
+                <StackPanel Orientation="Vertical">
+                    <HeaderedContentControl Header="File picker (Linux only, experimental)">
+                        <ComboBox Width="24"
+                                  ItemsSource="{Binding AvailableFilePickers}"
+                                  SelectedItem="{Binding Settings.FilePicker}">
+
+                        </ComboBox>
+                    </HeaderedContentControl>
                 </StackPanel>
             </TabItem>
         </TabControl>

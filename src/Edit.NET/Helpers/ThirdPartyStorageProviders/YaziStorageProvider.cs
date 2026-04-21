@@ -25,10 +25,10 @@ namespace EditNET.Helpers.ThirdPartyStorageProviders
 
             if (suggestedStartLocation != null)
             {
-                location = $" \"{suggestedStartLocation.Path}\"";
+                location = suggestedStartLocation.Path.LocalPath;
             }
 
-            string arguments = $"{location} --chooser-file \"{tempFilePath}\"";
+            string arguments = $"\"{location}\" --chooser-file \"{tempFilePath}\"";
 
             var processStartInfo = new ProcessStartInfo
             {
@@ -50,7 +50,9 @@ namespace EditNET.Helpers.ThirdPartyStorageProviders
             if (exitCode != 0)
                 return [];
 
-            return new[] { new StorageFile(File.ReadAllText(tempFilePath)) };
+            var result = new StorageFile(File.ReadAllText(tempFilePath));
+            File.Delete(tempFilePath);
+            return [result];
         }
 
         public Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options)
@@ -85,7 +87,8 @@ namespace EditNET.Helpers.ThirdPartyStorageProviders
 
         public Task<IStorageFolder?> TryGetFolderFromPathAsync(Uri folderPath)
         {
-            throw new NotSupportedException();
+            string absolutePath = folderPath.LocalPath;
+            return Task.FromResult<IStorageFolder?>(new StorageFolder(Path.GetDirectoryName(absolutePath)!));
         }
 
         public Task<IStorageFolder?> TryGetWellKnownFolderAsync(WellKnownFolder wellKnownFolder)
@@ -96,51 +99,5 @@ namespace EditNET.Helpers.ThirdPartyStorageProviders
         public bool CanOpen => throw new NotSupportedException();
         public bool CanSave => throw new NotSupportedException();
         public bool CanPickFolder => throw new NotSupportedException();
-    }
-    
-    public class StorageFile(string path) : IStorageFile
-    {
-        public void Dispose()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<StorageItemProperties> GetBasicPropertiesAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<string?> SaveBookmarkAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IStorageFolder?> GetParentAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task DeleteAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IStorageItem?> MoveAsync(IStorageFolder destination)
-        {
-            throw new NotImplementedException();
-        }
-
-        public string Name { get; }
-        public Uri Path { get; }
-        public bool CanBookmark { get; }
-        public Task<Stream> OpenReadAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<Stream> OpenWriteAsync()
-        {
-            throw new NotImplementedException();
-        }
     }
 }

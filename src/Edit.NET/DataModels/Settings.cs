@@ -17,5 +17,11 @@ namespace EditNET.DataModels
         public string DefaultExtension { get; set; } = ".txt";
 
         public ThemeName SyntaxTheme { get; set; } = ThemeName.VisualStudioDark;
+
+        public string FilePicker { get; set; } = FilePickerBuiltIn;
+
+        public const string FilePickerBuiltIn = "Built-in";
+        public const string FilePickerYazi = "yazi";
+        public const string FilePickerRanger = "ranger";
     }
 }
