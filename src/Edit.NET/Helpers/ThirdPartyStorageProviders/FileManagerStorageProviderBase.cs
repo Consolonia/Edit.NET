@@ -13,8 +13,9 @@ namespace EditNET.Helpers.ThirdPartyStorageProviders
     public abstract class FileManagerStorageProviderBase(string executableName) : IStorageProvider
     {
         protected abstract string GetFileOpenArguments(FilePickerOpenOptions options, string tempFilePath);
+        protected abstract string GetFileSaveArguments(FilePickerSaveOptions options, string tempFilePath);
 
-        public async Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options)
+        private async Task<string?> RunFileManagerAsync(Func<string, string> argumentsFactory, string? workingDirectory)
         {
             var cts = new CancellationTokenSource();
 
@@ -24,20 +25,12 @@ namespace EditNET.Helpers.ThirdPartyStorageProviders
 
             try
             {
-                string location = string.Empty;
-                IStorageFolder? suggestedStartLocation = options.SuggestedStartLocation;
-
-                if (suggestedStartLocation != null)
-                {
-                    location = suggestedStartLocation.Path.LocalPath;
-                }
-
                 var processStartInfo = new ProcessStartInfo
                 {
                     FileName = executableName,
-                    Arguments = GetFileOpenArguments(options, tempFilePath),
+                    Arguments = argumentsFactory(tempFilePath),
                     UseShellExecute = false,
-                    WorkingDirectory = location
+                    WorkingDirectory = workingDirectory ?? string.Empty
                 };
 
                 int exitCode = -1;
@@ -49,11 +42,11 @@ namespace EditNET.Helpers.ThirdPartyStorageProviders
                     cts.Cancel();
                     exitCode = process.ExitCode;
                 }, cts.Token);
-                if (exitCode != 0)
-                    return [];
 
-                var result = new StorageFile(File.ReadAllText(tempFilePath));
-                return [result];
+                if (exitCode != 0)
+                    return null;
+
+                return File.ReadAllText(tempFilePath);
             }
             finally
             {
@@ -61,9 +54,26 @@ namespace EditNET.Helpers.ThirdPartyStorageProviders
             }
         }
 
-        public Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options)
+        public async Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options)
         {
-            throw new NotImplementedException();
+            string? location = options.SuggestedStartLocation?.Path.LocalPath;
+
+            string? selectedPath = await RunFileManagerAsync(tempFilePath => GetFileOpenArguments(options, tempFilePath), location);
+            if (selectedPath == null)
+                return [];
+
+            return [new StorageFile(selectedPath)];
+        }
+
+        public async Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options)
+        {
+            string? location = options.SuggestedStartLocation?.Path.LocalPath;
+
+            string? selectedPath = await RunFileManagerAsync(tempFilePath => GetFileSaveArguments(options, tempFilePath), location);
+            if (selectedPath == null)
+                return null;
+
+            return new StorageFile(selectedPath);
         }
 
         public Task<SaveFilePickerResult> SaveFilePickerWithResultAsync(FilePickerSaveOptions options)

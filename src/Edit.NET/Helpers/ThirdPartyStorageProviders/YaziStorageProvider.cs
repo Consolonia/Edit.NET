@@ -6,6 +6,11 @@ namespace EditNET.Helpers.ThirdPartyStorageProviders
     {
         protected override string GetFileOpenArguments(FilePickerOpenOptions options, string tempFilePath)
         {
+            return GetArgumentsInternal(options, tempFilePath);
+        }
+
+        private static string GetArgumentsInternal(PickerOptions options, string tempFilePath)
+        {
             string locationArgument = string.Empty;
             IStorageFolder? suggestedStartLocation = options.SuggestedStartLocation;
 
@@ -15,6 +20,11 @@ namespace EditNET.Helpers.ThirdPartyStorageProviders
             }
 
             return $"{locationArgument} --chooser-file \"{tempFilePath}\"";
+        }
+
+        protected override string GetFileSaveArguments(FilePickerSaveOptions options, string tempFilePath)
+        {
+            return GetArgumentsInternal(options, tempFilePath);
         }
     }
 }
