@@ -6,7 +6,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using Consolonia;
+using Consolonia.Core.Infrastructure;
 
 namespace EditNET.Helpers.ThirdPartyStorageProviders
 {
@@ -18,8 +20,18 @@ namespace EditNET.Helpers.ThirdPartyStorageProviders
         private async Task<string?> RunFileManagerAsync(Func<string, string> argumentsFactory, string? workingDirectory)
         {
             var cts = new CancellationTokenSource();
+            
+            var applicationLifetime = (ConsoloniaLifetime)Application.Current!.ApplicationLifetime!;
 
-            await ((ConsoloniaLifetime)Application.Current!.ApplicationLifetime!).DisconnectFromConsoleAsync(cts.Token);
+            var console = AvaloniaLocator.Current.GetRequiredService<IConsole>();
+            
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                console.RestoreConsole();
+                applicationLifetime.DisconnectFromConsoleAsync(cts.Token);
+            });
+            
+            
 
             string tempFilePath = Path.GetTempFileName();
 
@@ -34,19 +46,23 @@ namespace EditNET.Helpers.ThirdPartyStorageProviders
                 };
 
                 int exitCode = -1;
-                await Task.Run(() =>
-                {
+                await Task.Run(async () =>
+                { 
                     using Process process = Process.Start(processStartInfo)!;
                     //WaitForExitAsync probably can be used, but seems we can not continue on initial thread
-                    process.WaitForExit();
+                    await process.WaitForExitAsync(CancellationToken.None);
                     cts.Cancel();
+                    Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        console.PrepareConsole();
+                    });
+                    
                     exitCode = process.ExitCode;
-                }, cts.Token);
+                }, CancellationToken.None);
 
-                if (exitCode != 0)
-                    return null;
-
-                return File.ReadAllText(tempFilePath);
+                
+                
+                return exitCode != 0 ? null : File.ReadAllText(tempFilePath);
             }
             finally
             {

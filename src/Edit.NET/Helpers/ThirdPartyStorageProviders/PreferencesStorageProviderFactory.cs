@@ -4,11 +4,10 @@ using Avalonia.Controls.Platform;
 using Avalonia.Platform.Storage;
 using Consolonia.ManagedWindows.Storage;
 using EditNET.DataModels;
-using EditNET.Helpers.ThirdPartyStorageProviders;
 using EditNET.ViewModels;
 using EditNET.Views;
 
-namespace EditNET.Helpers
+namespace EditNET.Helpers.ThirdPartyStorageProviders
 {
     internal class PreferencesStorageProviderFactory : ConsoloniaStorageProviderFactory, IStorageProviderFactory
     {
