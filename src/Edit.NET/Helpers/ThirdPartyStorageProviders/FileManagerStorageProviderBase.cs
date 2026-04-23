@@ -2,42 +2,47 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
+using AvaloniaEdit;
 using Consolonia;
 using Consolonia.Core.Infrastructure;
+using EditNET.Views;
+using Iciclecreek.Terminal;
 
 namespace EditNET.Helpers.ThirdPartyStorageProviders
 {
     public abstract class FileManagerStorageProviderBase(string executableName) : IStorageProvider
     {
-        protected abstract string GetFileOpenArguments(FilePickerOpenOptions options, string tempFilePath);
-        protected abstract string GetFileSaveArguments(FilePickerSaveOptions options, string tempFilePath);
+        protected abstract string[] GetFileOpenArguments(FilePickerOpenOptions options, string tempFilePath);
+        protected abstract string[] GetFileSaveArguments(FilePickerSaveOptions options, string tempFilePath);
 
-        private async Task<string?> RunFileManagerAsync(Func<string, string> argumentsFactory, string? workingDirectory)
+        private async Task<string?> RunFileManagerAsync(Func<string, string[]> argumentsFactory, string? workingDirectory)
         {
-            var cts = new CancellationTokenSource();
+            //var cts = new CancellationTokenSource();
             
             var applicationLifetime = (ConsoloniaLifetime)Application.Current!.ApplicationLifetime!;
 
-            var console = AvaloniaLocator.Current.GetRequiredService<IConsole>();
+            /*var console = AvaloniaLocator.Current.GetRequiredService<IConsole>();*/
             
-            await Dispatcher.UIThread.InvokeAsync(() =>
+            /*await Dispatcher.UIThread.InvokeAsync(() =>
             {
                 console.RestoreConsole();
                 applicationLifetime.DisconnectFromConsoleAsync(cts.Token);
-            });
+            });*/
             
-            
-
             string tempFilePath = Path.GetTempFileName();
 
             try
             {
-                var processStartInfo = new ProcessStartInfo
+                /*var processStartInfo = new ProcessStartInfo
                 {
                     FileName = executableName,
                     Arguments = argumentsFactory(tempFilePath),
@@ -62,6 +67,19 @@ namespace EditNET.Helpers.ThirdPartyStorageProviders
 
                 
                 
+                return exitCode != 0 ? null : File.ReadAllText(tempFilePath);*/
+
+                var pickerWindow = new PickerWindow
+                {
+                    AppStartLocation = workingDirectory ?? string.Empty,
+                    AppToRun = executableName,
+                    AppArgs = argumentsFactory(tempFilePath)
+                };
+                
+                //<avaloniaEdit:TextEditor Name="Editor"
+                ((MainWindow)applicationLifetime.MainWindow).FindDescendantOfType<TextEditor>().TextArea.Focus();
+                await pickerWindow.ShowModalAsync(applicationLifetime.MainWindow);
+                int exitCode = pickerWindow.ExitCode;
                 return exitCode != 0 ? null : File.ReadAllText(tempFilePath);
             }
             finally

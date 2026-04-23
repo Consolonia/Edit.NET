@@ -20,7 +20,9 @@ using Consolonia;
 using Consolonia.Controls;
 using EditNET.DataModels;
 using EditNET.Helpers;
+using EditNET.Helpers.ThirdPartyStorageProviders;
 using EditNET.ViewModels;
+using Iciclecreek.Terminal;
 using ReactiveUI;
 using TextMateSharp.Grammars;
 using TextMateSharp.Themes;
@@ -50,6 +52,8 @@ namespace EditNET.Views
             ApplyThemeColorsToEditor(_textMateInstallation);
 
             Loaded += OnLoaded;
+            
+            StyledProperty<IList<string>> styledProperty = TerminalControl.ArgsProperty; //initializaing the control
         }
 
         private MainWindow MainWindow => this.FindAncestorOfType<MainWindow>()!;
