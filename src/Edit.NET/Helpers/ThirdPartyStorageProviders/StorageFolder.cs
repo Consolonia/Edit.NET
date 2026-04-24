@@ -5,15 +5,8 @@ using Avalonia.Platform.Storage;
 
 namespace EditNET.Helpers.ThirdPartyStorageProviders
 {
-    public class StorageFolder : IStorageFolder
+    internal sealed class StorageFolder(string absolutePath) : IStorageFolder
     {
-        private readonly string _absolutePath;
-
-        public StorageFolder(string absolutePath)
-        {
-            _absolutePath = absolutePath;
-        }
-
         public void Dispose()
         {
             throw new NotSupportedException();
@@ -44,8 +37,8 @@ namespace EditNET.Helpers.ThirdPartyStorageProviders
             throw new NotSupportedException();
         }
 
-        public string Name => _absolutePath.Split(['\\'], StringSplitOptions.RemoveEmptyEntries)[^1];
-        public Uri Path => new(_absolutePath);
+        public string Name => absolutePath.Split(['\\'], StringSplitOptions.RemoveEmptyEntries)[^1];
+        public Uri Path => new(absolutePath);
         public bool CanBookmark => false;
 
         public IAsyncEnumerable<IStorageItem> GetItemsAsync()

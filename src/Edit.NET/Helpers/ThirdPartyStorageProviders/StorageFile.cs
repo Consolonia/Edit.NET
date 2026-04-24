@@ -5,7 +5,7 @@ using Avalonia.Platform.Storage;
 
 namespace EditNET.Helpers.ThirdPartyStorageProviders
 {
-    public class StorageFile(string path) : IStorageFile
+    internal sealed class StorageFile(string path) : IStorageFile
     {
         public void Dispose()
         {

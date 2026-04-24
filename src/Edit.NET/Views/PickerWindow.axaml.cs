@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Consolonia.Modal;
 using Iciclecreek.Terminal;
@@ -7,10 +9,11 @@ namespace EditNET.Views
 {
     public partial class PickerWindow : ModalWindow
     {
-        public string AppToRun { get; init; }
-        public string[] AppArgs { get; init; }
-        public string AppStartLocation { get; init; }
+        public required string AppToRun { get; init; }
+        public required IReadOnlyCollection<string> AppArgs { get; init; }
+        public required string AppStartLocation { get; init; }
 
+        
         public PickerWindow()
         {
             InitializeComponent();
@@ -19,7 +22,7 @@ namespace EditNET.Views
 
         private async void OnLoaded(object? sender, EventArgs e)
         {
-            await Terminal.LaunchProcess(AppStartLocation, AppToRun, AppArgs);
+            await Terminal.LaunchProcess(AppStartLocation, AppToRun, AppArgs.ToArray());
         }
 
         private async void OnProcessExited(object? sender, ProcessExitedEventArgs e)
