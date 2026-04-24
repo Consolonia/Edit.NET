@@ -18,8 +18,7 @@ namespace EditNET.Helpers.ThirdPartyStorageProviders
             {
                 locationArgument = $"{suggestedStartLocation.Path.LocalPath}";
             }
-
-            //return $"{locationArgument} --chooser-file \"{tempFilePath}\"";
+            
             return ["--chooser-file", tempFilePath, locationArgument]; 
         }
 

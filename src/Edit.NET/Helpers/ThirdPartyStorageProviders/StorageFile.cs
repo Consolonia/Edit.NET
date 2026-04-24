@@ -5,56 +5,49 @@ using Avalonia.Platform.Storage;
 
 namespace EditNET.Helpers.ThirdPartyStorageProviders
 {
-    public class StorageFile : IStorageFile
+    public class StorageFile(string path) : IStorageFile
     {
-        private readonly string _path;
-
-        public StorageFile(string path)
-        {
-            _path = path;
-        }
-
         public void Dispose()
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public Task<StorageItemProperties> GetBasicPropertiesAsync()
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public Task<string?> SaveBookmarkAsync()
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public Task<IStorageFolder?> GetParentAsync()
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public Task DeleteAsync()
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public Task<IStorageItem?> MoveAsync(IStorageFolder destination)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public string Name => System.IO.Path.GetFileName( Path.LocalPath);
-        public Uri Path => new(_path);
+        public Uri Path => new(path);
         public bool CanBookmark => false;
         public Task<Stream> OpenReadAsync()
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public Task<Stream> OpenWriteAsync()
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
     }
 }

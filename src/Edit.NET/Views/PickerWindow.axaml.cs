@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Consolonia.Modal;
 using Iciclecreek.Terminal;
 
@@ -21,10 +22,12 @@ namespace EditNET.Views
             await Terminal.LaunchProcess(AppStartLocation, AppToRun, AppArgs);
         }
 
-        private void OnProcessExited(object? sender, ProcessExitedEventArgs e)
+        private async void OnProcessExited(object? sender, ProcessExitedEventArgs e)
         {
             ExitCode = e.ExitCode;
-
+            if (e.ExitCode != 0)
+                await Task.Delay(1000);
+            
             CloseModal();
         }
 

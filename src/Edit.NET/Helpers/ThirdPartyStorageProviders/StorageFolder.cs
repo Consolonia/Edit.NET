@@ -16,32 +16,32 @@ namespace EditNET.Helpers.ThirdPartyStorageProviders
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public Task<StorageItemProperties> GetBasicPropertiesAsync()
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public Task<string?> SaveBookmarkAsync()
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public Task<IStorageFolder?> GetParentAsync()
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public Task DeleteAsync()
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public Task<IStorageItem?> MoveAsync(IStorageFolder destination)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public string Name => _absolutePath.Split(['\\'], StringSplitOptions.RemoveEmptyEntries)[^1];
@@ -50,27 +50,27 @@ namespace EditNET.Helpers.ThirdPartyStorageProviders
 
         public IAsyncEnumerable<IStorageItem> GetItemsAsync()
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public Task<IStorageFolder?> GetFolderAsync(string name)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public Task<IStorageFile?> GetFileAsync(string name)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public Task<IStorageFile?> CreateFileAsync(string name)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public Task<IStorageFolder?> CreateFolderAsync(string name)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
     }
 }

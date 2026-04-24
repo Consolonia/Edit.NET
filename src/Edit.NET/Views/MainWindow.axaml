@@ -7,7 +7,6 @@
         x:DataType="viewModels:AppViewModel"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:modal="clr-namespace:Consolonia.Modal;assembly=Consolonia.Modal"
         mc:Ignorable="d"
         d:DataContext="{viewModels:EditorViewModel}">
     <views:EditorView DataContext="{Binding EditorViewModel}" />

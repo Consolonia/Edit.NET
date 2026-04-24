@@ -21,11 +21,9 @@ namespace EditNET.Helpers.ThirdPartyStorageProviders
 
             if (suggestedStartLocation != null)
             {
-                //locationArgument = $"\"{suggestedStartLocation.Path.LocalPath}\"";
                 locationArgument = $"{suggestedStartLocation.Path.LocalPath}";
             }
 
-            //return $"{locationArgument} --choosefile=\"{tempFilePath}\"";
             return [locationArgument, $"--choosefile={tempFilePath}"];
         }
     }
