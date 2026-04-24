@@ -24,7 +24,9 @@ namespace EditNET.ViewModels
         [
             Settings.FilePickerBuiltIn, 
             Settings.FilePickerYazi, 
-            Settings.FilePickerRanger
+            Settings.FilePickerRanger,
+            Settings.FilePickerFar,
+            Settings.FilePickerFar2l
         ];
     }
 }
