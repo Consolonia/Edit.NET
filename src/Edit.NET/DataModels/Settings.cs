@@ -24,6 +24,6 @@ namespace EditNET.DataModels
         public const string FilePickerYazi = "yazi";
         public const string FilePickerRanger = "ranger";
         public const string FilePickerFar = "far";
-        public const string FilePickerFar2l = "far2l";
+        public const string FilePickerFar2L = "far2l";
     }
 }

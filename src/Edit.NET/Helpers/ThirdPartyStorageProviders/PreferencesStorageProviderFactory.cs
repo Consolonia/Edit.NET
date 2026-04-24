@@ -23,7 +23,7 @@ namespace EditNET.Helpers.ThirdPartyStorageProviders
                 Settings.FilePickerYazi => new YaziStorageProvider(),
                 Settings.FilePickerRanger => new RangerStorageProvider(),
                 Settings.FilePickerFar => new FarStorageProvider(),
-                Settings.FilePickerFar2l => new Far2lStorageProvider(),
+                Settings.FilePickerFar2L => new Far2LStorageProvider(),
                 _ => throw new NotSupportedException("Unsupported file picker: " + editorViewModel.Settings.FilePicker +
                                                      ". Supported values: BuiltIn, Yazi, Ranger, far, far2l")
             };
