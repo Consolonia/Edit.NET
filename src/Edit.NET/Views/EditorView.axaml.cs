@@ -53,7 +53,8 @@ namespace EditNET.Views
 
             Loaded += OnLoaded;
             
-            StyledProperty<IList<string>> styledProperty = TerminalControl.ArgsProperty; //initializaing the control
+            //todo: 8D932615-A858-4063-835C-CDFCD5FFB799 check that it's still necessary in tests once tests added
+            StyledProperty<IList<string>> unused = TerminalControl.ArgsProperty; //initializaing the control, it changes the style and they become unavailable due some Avalonia issue
         }
 
         private MainWindow MainWindow => this.FindAncestorOfType<MainWindow>()!;

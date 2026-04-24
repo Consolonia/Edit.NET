@@ -61,14 +61,14 @@
             </TabItem>
 
             <TabItem Header="Experimental">
-                <StackPanel Orientation="Vertical">
-                    <HeaderedContentControl Header="File picker (Linux only, experimental)">
-                        <ComboBox Width="24"
-                                  ItemsSource="{Binding AvailableFilePickers}"
-                                  SelectedItem="{Binding Settings.FilePicker}">
+                <StackPanel Orientation="Horizontal">
+                    <Label>File Picker</Label>
+                    <ComboBox Width="24"
+                              ItemsSource="{Binding AvailableFilePickers}"
+                              SelectedItem="{Binding Settings.FilePicker}"
+                              VerticalAlignment="Top">
 
-                        </ComboBox>
-                    </HeaderedContentControl>
+                    </ComboBox>
                 </StackPanel>
             </TabItem>
         </TabControl>
