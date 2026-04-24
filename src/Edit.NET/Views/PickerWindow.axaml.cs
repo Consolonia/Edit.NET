@@ -9,16 +9,17 @@ namespace EditNET.Views
 {
     public partial class PickerWindow : ModalWindow
     {
-        public required string AppToRun { get; init; }
-        public required IReadOnlyCollection<string> AppArgs { get; init; }
-        public required string AppStartLocation { get; init; }
-
-        
         public PickerWindow()
         {
             InitializeComponent();
             Loaded += OnLoaded;
         }
+
+        public required string AppToRun { get; init; }
+        public required IReadOnlyCollection<string> AppArgs { get; init; }
+        public required string AppStartLocation { get; init; }
+
+        public int ExitCode { get; set; }
 
         private async void OnLoaded(object? sender, EventArgs e)
         {
@@ -30,10 +31,8 @@ namespace EditNET.Views
             ExitCode = e.ExitCode;
             if (e.ExitCode != 0)
                 await Task.Delay(1000);
-            
+
             CloseModal();
         }
-
-        public int ExitCode { get; set; }
     }
 }

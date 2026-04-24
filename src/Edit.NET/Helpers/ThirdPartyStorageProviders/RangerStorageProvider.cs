@@ -19,10 +19,7 @@ namespace EditNET.Helpers.ThirdPartyStorageProviders
             string locationArgument = string.Empty;
             IStorageFolder? suggestedStartLocation = options.SuggestedStartLocation;
 
-            if (suggestedStartLocation != null)
-            {
-                locationArgument = $"{suggestedStartLocation.Path.LocalPath}";
-            }
+            if (suggestedStartLocation != null) locationArgument = $"{suggestedStartLocation.Path.LocalPath}";
 
             return [locationArgument, $"--choosefile={tempFilePath}"];
         }

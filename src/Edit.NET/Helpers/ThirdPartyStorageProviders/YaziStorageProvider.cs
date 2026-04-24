@@ -14,12 +14,9 @@ namespace EditNET.Helpers.ThirdPartyStorageProviders
             string locationArgument = string.Empty;
             IStorageFolder? suggestedStartLocation = options.SuggestedStartLocation;
 
-            if (suggestedStartLocation != null)
-            {
-                locationArgument = $"{suggestedStartLocation.Path.LocalPath}";
-            }
-            
-            return ["--chooser-file", tempFilePath, locationArgument]; 
+            if (suggestedStartLocation != null) locationArgument = $"{suggestedStartLocation.Path.LocalPath}";
+
+            return ["--chooser-file", tempFilePath, locationArgument];
         }
 
         protected override string[] GetFileSaveArguments(FilePickerSaveOptions options, string tempFilePath)

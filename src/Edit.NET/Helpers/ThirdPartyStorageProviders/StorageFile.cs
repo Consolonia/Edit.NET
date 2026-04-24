@@ -37,9 +37,10 @@ namespace EditNET.Helpers.ThirdPartyStorageProviders
             throw new NotSupportedException();
         }
 
-        public string Name => System.IO.Path.GetFileName( Path.LocalPath);
+        public string Name => System.IO.Path.GetFileName(Path.LocalPath);
         public Uri Path => new(path);
         public bool CanBookmark => false;
+
         public Task<Stream> OpenReadAsync()
         {
             throw new NotSupportedException();

@@ -22,9 +22,9 @@ namespace EditNET.ViewModels
 
         public IReadOnlyCollection<string> AvailableFilePickers { get; } =
         [
-            Settings.FilePickerBuiltIn, 
-            /*Settings.FilePickerYazi,*/ 
-            Settings.FilePickerRanger,
+            Settings.FilePickerBuiltIn,
+            /*Settings.FilePickerYazi,*/
+            Settings.FilePickerRanger
             /*Settings.FilePickerFar,
             Settings.FilePickerFar2l*/
         ];

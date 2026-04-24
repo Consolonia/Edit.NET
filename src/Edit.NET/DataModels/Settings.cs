@@ -5,6 +5,11 @@ namespace EditNET.DataModels
 {
     public class Settings
     {
+        public const string FilePickerBuiltIn = "Built-in";
+        public const string FilePickerYazi = "yazi";
+        public const string FilePickerRanger = "ranger";
+        public const string FilePickerFar = "far";
+        public const string FilePickerFar2L = "far2l";
         public ConsoloniaTheme ConsoloniaTheme { get; set; } = ConsoloniaTheme.Modern;
 
         public bool LightVariant { get; set; }
@@ -19,11 +24,5 @@ namespace EditNET.DataModels
         public ThemeName SyntaxTheme { get; set; } = ThemeName.VisualStudioDark;
 
         public string FilePicker { get; set; } = FilePickerBuiltIn;
-
-        public const string FilePickerBuiltIn = "Built-in";
-        public const string FilePickerYazi = "yazi";
-        public const string FilePickerRanger = "ranger";
-        public const string FilePickerFar = "far";
-        public const string FilePickerFar2L = "far2l";
     }
 }

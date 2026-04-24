@@ -66,9 +66,7 @@
                     <ComboBox Width="24"
                               ItemsSource="{Binding AvailableFilePickers}"
                               SelectedItem="{Binding Settings.FilePicker}"
-                              VerticalAlignment="Top">
-
-                    </ComboBox>
+                              VerticalAlignment="Top" />
                 </StackPanel>
             </TabItem>
         </TabControl>

@@ -6,28 +6,28 @@ namespace EditNET.Helpers.ThirdPartyStorageProviders
     public abstract class FarStorageProviderBase(string executableName) : FileManagerStorageProviderBase(executableName)
     {
         private const string LuaScript = """
-            local out = ...
-            Macro {
-              area="Shell";
-              key="F5";
-              description="Pick file and exit";
-              action=function()
-                local item = panel.GetCurrentPanelItem(nil, 1)
-                if not item then return end
+                                         local out = ...
+                                         Macro {
+                                           area="Shell";
+                                           key="F5";
+                                           description="Pick file and exit";
+                                           action=function()
+                                             local item = panel.GetCurrentPanelItem(nil, 1)
+                                             if not item then return end
 
-                local dir = panel.GetPanelDirectory(nil, 1).Name
-                local sep = dir:sub(-1) == "/" and "" or "/"
-                local path = dir .. sep .. item.FileName
+                                             local dir = panel.GetPanelDirectory(nil, 1).Name
+                                             local sep = dir:sub(-1) == "/" and "" or "/"
+                                             local path = dir .. sep .. item.FileName
 
-                local f = io.open(out, "w")
-                f:write(path)
-                f:close()
+                                             local f = io.open(out, "w")
+                                             f:write(path)
+                                             f:close()
 
-                Keys("Esc")
-                exit()
-              end;
-            }
-            """;
+                                             Keys("Esc")
+                                             exit()
+                                           end;
+                                         }
+                                         """;
 
         protected static string[] GetArgumentsInternal(PickerOptions options, string tempFilePath)
         {
