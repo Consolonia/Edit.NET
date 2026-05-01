@@ -1,8 +1,6 @@
-using System.Windows.Input;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using CommunityToolkit.Mvvm.Input;
 using Consolonia;
 using Consolonia.Modal;
 using EditNET.DataModels;
@@ -13,13 +11,13 @@ namespace EditNET.Views
 {
     public partial class EditSettingsDialog : ModalWindow
     {
-        public ICommand OnOkCommand { get; private set; }
+        /*public ICommand OnOkCommand { get; private set; }*/
         
         [UsedImplicitly]
         public EditSettingsDialog()
         {
             InitializeComponent();
-            OnOkCommand = new RelayCommand(() => { OnOk(null!, null!); });
+            /*OnOkCommand = new RelayCommand(() => { OnOk(null!, null!); });*/
             if (!((ConsoloniaLifetime)Application.Current!.ApplicationLifetime!).IsRgbColorMode())
                 CompatibilityErrorTxt.IsVisible = true;
         }
