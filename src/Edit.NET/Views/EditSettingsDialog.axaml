@@ -11,11 +11,11 @@
                    VerticalAlignment="Center"
                    d:DataContext="{viewModels:EditSettingsViewModel}"
                    x:DataType="viewModels:EditSettingsViewModel">
-    <modal:ModalWindow.KeyBindings>
-        <!--todo: does not work-->
+    <!--<modal:ModalWindow.KeyBindings>
+        todo: does not work
         <KeyBinding Gesture="CTRL+ENTER"
                     Command="{Binding RelativeSource={RelativeSource Self}, Path=OnOkCommand}" />
-    </modal:ModalWindow.KeyBindings>
+    </modal:ModalWindow.KeyBindings>-->
     <StackPanel>
         <TextBlock x:Name="CompatibilityErrorTxt"
                    IsVisible="False"
