@@ -27,7 +27,8 @@
                     TabStripPlacement="Left"
                     MinHeight="15"
                     MinWidth="50">
-            <TabItem Header="_Editor" Loaded="Control_OnLoaded">
+            <TabItem Header="_Editor"
+                     Loaded="Control_OnLoaded">
                 <StackPanel Orientation="Vertical">
                     <StackPanel Orientation="Horizontal"
                                 Spacing="1">
@@ -78,7 +79,7 @@
 
         <StackPanel Orientation="Horizontal"
                     HorizontalAlignment="Right">
-        <!--todo: CTRL+ENTER does not work-->
+            <!--todo: CTRL+ENTER does not work-->
             <Button Content="OK"
                     Name="OkButton"
                     HotKey="CTRL+ENTER"

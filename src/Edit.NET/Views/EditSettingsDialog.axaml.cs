@@ -12,7 +12,7 @@ namespace EditNET.Views
     public partial class EditSettingsDialog : ModalWindow
     {
         /*public ICommand OnOkCommand { get; private set; }*/
-        
+
         [UsedImplicitly]
         public EditSettingsDialog()
         {
