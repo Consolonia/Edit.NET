@@ -11,6 +11,11 @@
                    VerticalAlignment="Center"
                    d:DataContext="{viewModels:EditSettingsViewModel}"
                    x:DataType="viewModels:EditSettingsViewModel">
+    <modal:ModalWindow.KeyBindings>
+        <!--todo: does not work-->
+        <KeyBinding Gesture="CTRL+ENTER"
+                    Command="{Binding RelativeSource={RelativeSource Self}, Path=OnOkCommand}" />
+    </modal:ModalWindow.KeyBindings>
     <StackPanel>
         <TextBlock x:Name="CompatibilityErrorTxt"
                    IsVisible="False"
@@ -22,7 +27,7 @@
                     TabStripPlacement="Left"
                     MinHeight="15"
                     MinWidth="50">
-            <TabItem Header="Editor">
+            <TabItem Header="_Editor" Loaded="Control_OnLoaded">
                 <StackPanel Orientation="Vertical">
                     <StackPanel Orientation="Horizontal"
                                 Spacing="1">
@@ -43,7 +48,7 @@
                     </StackPanel>
                 </StackPanel>
             </TabItem>
-            <TabItem Header="UI">
+            <TabItem Header="_UI">
                 <StackPanel Orientation="Vertical">
                     <StackPanel Orientation="Horizontal">
                         <Label Content="Theme" />
@@ -60,7 +65,7 @@
                 </StackPanel>
             </TabItem>
 
-            <TabItem Header="Experimental">
+            <TabItem Header="E_xperimental">
                 <StackPanel Orientation="Horizontal">
                     <Label>File Picker</Label>
                     <ComboBox Width="24"
@@ -73,8 +78,10 @@
 
         <StackPanel Orientation="Horizontal"
                     HorizontalAlignment="Right">
+        <!--todo: CTRL+ENTER does not work-->
             <Button Content="OK"
                     Name="OkButton"
+                    HotKey="CTRL+ENTER"
                     Click="OnOk"
                     Margin="1" />
             <Button Content="Cancel"
