@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Consolonia;
 using Consolonia.Modal;
@@ -10,10 +11,13 @@ namespace EditNET.Views
 {
     public partial class EditSettingsDialog : ModalWindow
     {
+        /*public ICommand OnOkCommand { get; private set; }*/
+
         [UsedImplicitly]
         public EditSettingsDialog()
         {
             InitializeComponent();
+            /*OnOkCommand = new RelayCommand(() => { OnOk(null!, null!); });*/
             if (!((ConsoloniaLifetime)Application.Current!.ApplicationLifetime!).IsRgbColorMode())
                 CompatibilityErrorTxt.IsVisible = true;
         }
@@ -25,7 +29,7 @@ namespace EditNET.Views
 
         public Settings? Result { get; private set; }
 
-        private void OnOk(object sender, RoutedEventArgs e)
+        public void OnOk(object sender, RoutedEventArgs e)
         {
             Result = ((EditSettingsViewModel)DataContext!).Settings;
             CloseModal();
@@ -35,6 +39,11 @@ namespace EditNET.Views
         {
             Result = null;
             CloseModal();
+        }
+
+        private void Control_OnLoaded(object? sender, RoutedEventArgs e)
+        {
+            ((Control)sender!).Focus();
         }
     }
 }

@@ -21,6 +21,7 @@ using Consolonia.Controls;
 using EditNET.DataModels;
 using EditNET.Helpers;
 using EditNET.ViewModels;
+using Iciclecreek.Terminal;
 using ReactiveUI;
 using TextMateSharp.Grammars;
 using TextMateSharp.Themes;
@@ -50,6 +51,11 @@ namespace EditNET.Views
             ApplyThemeColorsToEditor(_textMateInstallation);
 
             Loaded += OnLoaded;
+
+            //todo: 8D932615-A858-4063-835C-CDFCD5FFB799 check that it's still necessary in tests once tests added
+            StyledProperty<IList<string>>
+                unused = TerminalControl
+                    .ArgsProperty; //initializaing the control, it changes the style and they become unavailable due some Avalonia issue
         }
 
         private MainWindow MainWindow => this.FindAncestorOfType<MainWindow>()!;

@@ -1,0 +1,15 @@
+<modal:ModalWindow xmlns="https://github.com/avaloniaui"
+                   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                   xmlns:modal="clr-namespace:Consolonia.Modal;assembly=Consolonia.Modal"
+                   xmlns:terminal="clr-namespace:Iciclecreek.Terminal;assembly=Iciclecreek.Avalonia.Terminal"
+                   x:Class="EditNET.Views.PickerWindow"
+                   Title="Open/Save file"
+                   Icon="{StaticResource Icon_Warning}"
+                   Margin="3">
+    <modal:ModalWindow.Styles>
+        <StyleInclude Source="avares://Iciclecreek.Avalonia.Terminal/Themes/Generic.axaml" />
+    </modal:ModalWindow.Styles>
+    <terminal:TerminalControl x:Name="Terminal"
+                              BufferSize="1000"
+                              ProcessExited="OnProcessExited" />
+</modal:ModalWindow>

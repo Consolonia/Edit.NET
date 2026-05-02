@@ -30,7 +30,7 @@ namespace EditNET.ViewModels
             this.WhenAnyValue(model => model.Document).Skip(1).Subscribe(OnDocumentUpdatedNoInitial);
         }
 
-        [UsedImplicitly]
+        [UsedImplicitly(Reason = "Designer")]
         public EditorViewModel()
         {
             _settings = new Settings();

@@ -2,8 +2,9 @@
 
 using System.Threading;
 using Avalonia;
+using Avalonia.Controls.Platform;
 using Consolonia;
-using Consolonia.ManagedWindows.Storage;
+using EditNET.Helpers.ThirdPartyStorageProviders;
 
 namespace EditNET
 {
@@ -24,7 +25,8 @@ namespace EditNET
                 .UseConsolonia()
                 .UseAutoDetectedConsole()
                 .WithDeveloperTools()
-                .UseConsoloniaStorage()
+                //.UseConsoloniaStorage()
+                .With<IStorageProviderFactory>(new PreferencesStorageProviderFactory())
                 .LogToException();
         }
     }

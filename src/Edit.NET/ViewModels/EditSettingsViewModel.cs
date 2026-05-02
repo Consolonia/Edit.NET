@@ -7,23 +7,26 @@ using TextMateSharp.Grammars;
 
 namespace EditNET.ViewModels
 {
-    public class EditSettingsViewModel : ObservableValidator
+    public class EditSettingsViewModel(Settings settings) : ObservableValidator
     {
-        public EditSettingsViewModel(Settings settings)
+        [UsedImplicitly(Reason = "Used by designer")]
+        public EditSettingsViewModel() : this(new Settings())
         {
-            Settings = settings;
         }
 
-        [UsedImplicitly]
-        public EditSettingsViewModel()
-        {
-            Settings = new Settings();
-        }
-
-        public Settings Settings { get; }
+        public Settings Settings { get; } = settings;
 
         public IReadOnlyCollection<ConsoloniaTheme> AvailableThemes { get; } = Enum.GetValues<ConsoloniaTheme>();
 
         public IReadOnlyCollection<ThemeName> SyntaxThemes { get; } = Enum.GetValues<ThemeName>();
+
+        public IReadOnlyCollection<string> AvailableFilePickers { get; } =
+        [
+            Settings.FilePickerBuiltIn,
+            /*Settings.FilePickerYazi,*/
+            Settings.FilePickerRanger
+            /*Settings.FilePickerFar,
+            Settings.FilePickerFar2l*/
+        ];
     }
 }
