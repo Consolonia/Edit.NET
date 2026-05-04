@@ -7,16 +7,23 @@
     
     <!--General-->
     <PropertyGroup>
+        <RootNamespace>EditNET</RootNamespace>
         <OutputType>Exe</OutputType>
-        <Nullable>enable</Nullable>
-        <PackAsTool>true</PackAsTool>
+        <Nullable>enable</Nullable>        
         <PublishReadyToRun Condition="'$(PortableBuild)' != 'true'">true</PublishReadyToRun>
         <RuntimeIdentifiers Condition="'$(PortableBuild)' != 'true'">linux-x64;win-x64;osx-x64;linux-arm64;win-arm64;osx-arm64;linux-musl-x64;linux-musl-arm64</RuntimeIdentifiers>
-        <RootNamespace>EditNET</RootNamespace>
+    </PropertyGroup>
+    
+    <PropertyGroup>
+        <PackAsTool>true</PackAsTool>
         <PackageId>EditDotNet</PackageId>
-        <ToolCommandName>Edit.NET</ToolCommandName>        
+        <Title>Edit.NET</Title>
+        <Description>Terminal-based text editor built with Avalonia and Consolonia, providing a powerful and efficient editing experience in the console.</Description>
+        <PackageTags>terminal;console;editor;text-editor;avalonia;consolonia;dotnet-tool;cross-platform;edit.net;editdotnet</PackageTags>
+        <ToolCommandName>Edit.NET</ToolCommandName>
         <ProjectUrl>https://github.com/consolonia/Edit.NET</ProjectUrl>
         <RepositoryUrl>https://github.com/consolonia/Edit.NET</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)' != 'Debug'">
