@@ -62,7 +62,7 @@ namespace EditNET
                 DataContext = ViewModel,
                 RequestedThemeVariant = ViewModel.EditorViewModel.Settings.LightVariant
                     ? ThemeVariant.Light
-                    : ThemeVariant.Default
+                    : ThemeVariant.Dark
             };
 
             _notificationManager = new WindowNotificationManager(desktopLifetime.MainWindow!);
