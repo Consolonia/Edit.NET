@@ -1,0 +1,279 @@
+name: Release Packaging & Publishing
+
+on:
+  workflow_run:
+    workflows: ["General Build"]
+    types:
+      - completed
+
+permissions:
+  contents: write
+  actions: read
+  pull-requests: read
+
+concurrency:
+  group: release_packaging_publish-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: false
+
+env:
+  PROJECT_PATH: ./src/Edit.NET/Edit.NET.csproj
+  ARTIFACTS_DIR: ./artifacts
+
+jobs:
+  evaluate_trigger:
+    runs-on: ubuntu-latest
+    outputs:
+      should_package: ${{ steps.evaluate.outputs.should_package }}
+      should_create_release: ${{ steps.evaluate.outputs.should_create_release }}
+      should_publish_ecosystems: ${{ steps.evaluate.outputs.should_publish_ecosystems }}
+    steps:
+      - name: Evaluate trigger mode
+        id: evaluate
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const workflowRun = context.payload.workflow_run;
+
+            const setOutputs = (shouldPackage, shouldCreateRelease, shouldPublishEcosystems) => {
+              core.setOutput('should_package', shouldPackage ? 'true' : 'false');
+              core.setOutput('should_create_release', shouldCreateRelease ? 'true' : 'false');
+              core.setOutput('should_publish_ecosystems', shouldPublishEcosystems ? 'true' : 'false');
+            };
+
+            if (workflowRun.conclusion !== 'success') {
+              core.info('General Build did not complete successfully. Packaging will be skipped.');
+              setOutputs(false, false, false);
+              return;
+            }
+
+            const isOfficialRelease = workflowRun.event === 'workflow_dispatch' && workflowRun.head_branch === 'main';
+            if (isOfficialRelease) {
+              core.info('Official release mode detected.');
+              setOutputs(true, true, true);
+              return;
+            }
+
+            if (workflowRun.event !== 'pull_request') {
+              core.info(`Unsupported triggering event '${workflowRun.event}'. Packaging will be skipped.`);
+              setOutputs(false, false, false);
+              return;
+            }
+
+            core.info('PR distribution mode enabled for pull request workflow runs.');
+            setOutputs(true, false, false);
+
+  package_and_release:
+    needs: evaluate_trigger
+    outputs:
+      release_tag: ${{ steps.release_meta.outputs.release_tag }}
+      release_version: ${{ steps.release_meta.outputs.release_version }}
+    if: ${{ needs.evaluate_trigger.outputs.should_package == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+
+      - name: Load .env
+        uses: c-py/action-dotenv-to-setenv@v5
+
+      - name: Download release metadata from General Build
+        uses: actions/download-artifact@v4
+        with:
+          name: release-metadata
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: ./release-metadata
+
+      - name: Load release metadata
+        id: release_meta
+        run: |
+          set -euo pipefail
+          REQUIRED_FILES="build_version consolonia_version release_version release_tag commit_sha"
+          for FILE in $REQUIRED_FILES; do
+            if [ ! -s "./release-metadata/$FILE" ]; then
+              echo "Missing required metadata file: ./release-metadata/$FILE" >&2
+              exit 1
+            fi
+          done
+
+          BUILD_VERSION=$(tr -d '\r\n' < ./release-metadata/build_version)
+          ConsoloniaVersion=$(tr -d '\r\n' < ./release-metadata/consolonia_version)
+          RELEASE_VERSION=$(tr -d '\r\n' < ./release-metadata/release_version)
+          RELEASE_TAG=$(tr -d '\r\n' < ./release-metadata/release_tag)
+          COMMIT_SHA=$(tr -d '\r\n' < ./release-metadata/commit_sha)
+
+          if [ "$COMMIT_SHA" != "${{ github.event.workflow_run.head_sha }}" ]; then
+            echo "Metadata commit SHA ($COMMIT_SHA) does not match workflow_run head SHA (${{ github.event.workflow_run.head_sha }})." >&2
+            exit 1
+          fi
+
+          if [ "${{ needs.evaluate_trigger.outputs.should_create_release }}" = "true" ]; then
+            git fetch --tags --force
+            if ! git rev-parse "$RELEASE_TAG" >/dev/null 2>&1; then
+              echo "Expected release tag '$RELEASE_TAG' not found. Ensure General Build created and pushed tags." >&2
+              exit 1
+            fi
+          else
+            echo "PR distribution mode: skipping release tag validation."
+          fi
+
+          echo "BUILD_VERSION=$BUILD_VERSION" >> $GITHUB_ENV
+          echo "ConsoloniaVersion=$ConsoloniaVersion" >> $GITHUB_ENV
+          echo "RELEASE_TAG=$RELEASE_TAG" >> $GITHUB_ENV
+          echo "RELEASE_VERSION=$RELEASE_VERSION" >> $GITHUB_ENV
+          echo "release_tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
+          echo "release_version=$RELEASE_VERSION" >> "$GITHUB_OUTPUT"
+          echo "Release tag: $RELEASE_TAG"
+          echo "Release version: $RELEASE_VERSION"
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.WORKFLOW_DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore "$PROJECT_PATH" /p:Configuration=Release
+
+      - name: Install packaging tools
+        run: |
+          dotnet tool install --global DotnetPackaging.Tool
+          echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
+
+      - name: Publish binaries for package formats
+        run: |
+          set -euo pipefail
+          mkdir -p "$ARTIFACTS_DIR/publish/linux-x64" "$ARTIFACTS_DIR/publish/win-x64" "$ARTIFACTS_DIR/publish/osx-x64"
+
+          dotnet publish "$PROJECT_PATH" --configuration release --runtime linux-x64 --self-contained true --no-restore --output "$ARTIFACTS_DIR/publish/linux-x64"
+          dotnet publish "$PROJECT_PATH" --configuration release --runtime win-x64 --self-contained true --no-restore --output "$ARTIFACTS_DIR/publish/win-x64"
+          dotnet publish "$PROJECT_PATH" --configuration release --runtime osx-x64 --self-contained true --no-restore --output "$ARTIFACTS_DIR/publish/osx-x64"
+
+      - name: Build release packages
+        run: |
+          set -euo pipefail
+          mkdir -p "$ARTIFACTS_DIR"
+
+          dotnetpackager appimage from-directory --directory "$ARTIFACTS_DIR/publish/linux-x64" --output "$ARTIFACTS_DIR/Edit.NET-${RELEASE_VERSION}-linux-x64.AppImage"
+          dotnetpackager deb from-directory --directory "$ARTIFACTS_DIR/publish/linux-x64" --output "$ARTIFACTS_DIR/Edit.NET_${RELEASE_VERSION}_amd64.deb"
+          dotnetpackager rpm from-directory --directory "$ARTIFACTS_DIR/publish/linux-x64" --output "$ARTIFACTS_DIR/Edit.NET-${RELEASE_VERSION}-1.x86_64.rpm"
+          dotnetpackager dmg from-directory --directory "$ARTIFACTS_DIR/publish/osx-x64" --output "$ARTIFACTS_DIR/Edit.NET-${RELEASE_VERSION}.dmg"
+          dotnetpackager msix from-directory --directory "$ARTIFACTS_DIR/publish/win-x64" --output "$ARTIFACTS_DIR/Edit.NET-${RELEASE_VERSION}.msix"
+          dotnetpackager exe from-directory --directory "$ARTIFACTS_DIR/publish/win-x64" --output "$ARTIFACTS_DIR/Edit.NET-${RELEASE_VERSION}-win-x64.exe"
+
+      - name: Build MSI via Quamotion
+        working-directory: ./src
+        run: |
+          set -euo pipefail
+          dotnet tool install --global dotnet-msi
+          dotnet msi install ./Edit.NET/Edit.NET.csproj
+          dotnet msi ./Edit.NET/Edit.NET.csproj --configuration release --framework net10.0 --runtime win-x64 --output ../artifacts
+
+      - name: Upload packaged artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-packages-${{ env.RELEASE_TAG }}
+          path: |
+            artifacts/*.AppImage
+            artifacts/*.deb
+            artifacts/*.rpm
+            artifacts/*.dmg
+            artifacts/*.msix
+            artifacts/*.exe
+            artifacts/*.msi
+          if-no-files-found: error
+
+      - name: Create or update GitHub release
+        if: ${{ needs.evaluate_trigger.outputs.should_create_release == 'true' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          generate_release_notes: true
+          files: |
+            artifacts/*.AppImage
+            artifacts/*.deb
+            artifacts/*.rpm
+            artifacts/*.dmg
+            artifacts/*.msix
+            artifacts/*.exe
+            artifacts/*.msi
+
+  publish_ecosystems:
+    needs: [evaluate_trigger, package_and_release]
+    if: ${{ needs.package_and_release.result == 'success' && needs.evaluate_trigger.outputs.should_publish_ecosystems == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Publish to WinGet (optional)
+        if: ${{ vars.WINGET_PACKAGE_IDENTIFIER != '' && (secrets.PERSONAL_ACCESS_TOKEN != '' || secrets.WINGET_TOKEN != '') }}
+        uses: vedantmgoyal9/winget-releaser@v2
+        with:
+          identifier: ${{ vars.WINGET_PACKAGE_IDENTIFIER }}
+          installers-regex: \.(msi|msix|exe)$
+          release-tag: ${{ needs.package_and_release.outputs.release_tag }}
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN || secrets.WINGET_TOKEN }}
+
+      - name: Publish to Chocolatey (optional)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CHOCOLATEY_API_KEY: ${{ secrets.CHOCOLATEY_API_KEY }}
+          CHOCOLATEY_PACKAGE_ID: ${{ vars.CHOCOLATEY_PACKAGE_ID }}
+        run: |
+          if [ -z "${CHOCOLATEY_API_KEY:-}" ]; then
+            echo "CHOCOLATEY_API_KEY secret is not configured. Skipping Chocolatey publish."
+            exit 0
+          fi
+
+          if [ ! -f "./scripts/publish-chocolatey.sh" ]; then
+            echo "scripts/publish-chocolatey.sh not found. Skipping Chocolatey publish."
+            exit 0
+          fi
+
+          chmod +x ./scripts/publish-chocolatey.sh
+          ./scripts/publish-chocolatey.sh "${{ needs.package_and_release.outputs.release_tag }}"
+
+      - name: Publish to AUR (optional)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AUR_SSH_PRIVATE_KEY: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+          AUR_PACKAGE_NAME: ${{ vars.AUR_PACKAGE_NAME }}
+          AUR_BINARY_NAME: ${{ vars.AUR_BINARY_NAME }}
+        run: |
+          if [ -z "${AUR_SSH_PRIVATE_KEY:-}" ] || [ -z "${AUR_PACKAGE_NAME:-}" ]; then
+            echo "AUR credentials or package name not configured. Skipping AUR publish."
+            exit 0
+          fi
+
+          if [ ! -f "./scripts/publish-aur.sh" ]; then
+            echo "scripts/publish-aur.sh not found. Skipping AUR publish."
+            exit 0
+          fi
+
+          chmod +x ./scripts/publish-aur.sh
+          ./scripts/publish-aur.sh "${{ needs.package_and_release.outputs.release_tag }}"
+
+      - name: Publish to Flathub (optional)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FLATHUB_TOKEN: ${{ secrets.FLATHUB_TOKEN || secrets.PERSONAL_ACCESS_TOKEN }}
+          FLATHUB_APP_ID: ${{ vars.FLATHUB_APP_ID }}
+          FLATHUB_MANIFEST_REPO: ${{ vars.FLATHUB_MANIFEST_REPO }}
+          FLATHUB_MANIFEST_PATH: ${{ vars.FLATHUB_MANIFEST_PATH }}
+          FLATHUB_BRANCH: ${{ vars.FLATHUB_BRANCH }}
+        run: |
+          if [ -z "${FLATHUB_TOKEN:-}" ] || [ -z "${FLATHUB_APP_ID:-}" ]; then
+            echo "Flathub token or app id not configured. Skipping Flathub publish."
+            exit 0
+          fi
+
+          if [ ! -f "./scripts/publish-flathub.sh" ]; then
+            echo "scripts/publish-flathub.sh not found. Skipping Flathub publish."
+            exit 0
+          fi
+
+          chmod +x ./scripts/publish-flathub.sh
+          ./scripts/publish-flathub.sh "${{ needs.package_and_release.outputs.release_tag }}"
