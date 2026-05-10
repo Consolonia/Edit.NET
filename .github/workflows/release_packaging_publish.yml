@@ -163,14 +163,6 @@ jobs:
           dotnetpackager msix from-directory --directory "$ARTIFACTS_DIR/publish/win-x64" --output "$ARTIFACTS_DIR/Edit.NET-${RELEASE_VERSION}.msix"
           dotnetpackager exe from-directory --directory "$ARTIFACTS_DIR/publish/win-x64" --output "$ARTIFACTS_DIR/Edit.NET-${RELEASE_VERSION}-win-x64.exe"
 
-      - name: Build MSI via Quamotion
-        working-directory: ./src
-        run: |
-          set -euo pipefail
-          dotnet tool install --global dotnet-msi
-          dotnet msi install ./Edit.NET/Edit.NET.csproj
-          dotnet msi ./Edit.NET/Edit.NET.csproj --configuration release --framework net10.0 --runtime win-x64 --output ../artifacts
-
       - name: Upload packaged artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -182,7 +174,6 @@ jobs:
             artifacts/*.dmg
             artifacts/*.msix
             artifacts/*.exe
-            artifacts/*.msi
           if-no-files-found: error
 
       - name: Create or update GitHub release
@@ -198,7 +189,6 @@ jobs:
             artifacts/*.dmg
             artifacts/*.msix
             artifacts/*.exe
-            artifacts/*.msi
 
   publish_ecosystems:
     needs: [evaluate_trigger, package_and_release]

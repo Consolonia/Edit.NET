@@ -30,7 +30,7 @@ PKGARCH="${AUR_PACKAGE_ARCH:-x86_64}"
 BIN_NAME="${AUR_BINARY_NAME:-edit-net}"
 
 RELEASE_JSON="$(release_json_by_tag "$RELEASE_TAG")"
-APPIMAGE_NAME="$(asset_name_by_regex "$RELEASE_JSON" '\\.AppImage$')"
+APPIMAGE_NAME="$(asset_name_by_regex "$RELEASE_JSON" '\.AppImage$')"
 if [ -z "$APPIMAGE_NAME" ]; then
   echo "No .AppImage asset found in release '$RELEASE_TAG'." >&2
   exit 1
@@ -87,7 +87,7 @@ pkgname = $PKGNAME
 EOF
 
 pushd "$AUR_DIR" >/dev/null
-if git diff --quiet -- PKGBUILD .SRCINFO; then
+if [ -z "$(git status --porcelain -- PKGBUILD .SRCINFO)" ]; then
   echo "AUR package '$PKGNAME' is already up to date for $RELEASE_TAG."
   exit 0
 fi

@@ -25,7 +25,7 @@ MANIFEST_PATH="${FLATHUB_MANIFEST_PATH:-${FLATHUB_APP_ID}.yml}"
 TARGET_BRANCH="${FLATHUB_BRANCH:-master}"
 
 RELEASE_JSON="$(release_json_by_tag "$RELEASE_TAG")"
-APPIMAGE_NAME="$(asset_name_by_regex "$RELEASE_JSON" '\\.AppImage$')"
+APPIMAGE_NAME="$(asset_name_by_regex "$RELEASE_JSON" '\.AppImage$')"
 if [ -z "$APPIMAGE_NAME" ]; then
   echo "No .AppImage asset found in release '$RELEASE_TAG'." >&2
   exit 1
@@ -51,9 +51,10 @@ fi
 
 sed -E -i "0,/^[[:space:]]*url:[[:space:]]*/s#^[[:space:]]*url:[[:space:]]*.*#  url: ${APPIMAGE_URL}#" "$MANIFEST_PATH"
 sed -E -i "0,/^[[:space:]]*sha256:[[:space:]]*/s#^[[:space:]]*sha256:[[:space:]]*.*#  sha256: ${APPIMAGE_SHA256}#" "$MANIFEST_PATH"
-sed -E -i "0,/^[[:space:]]*(tag|version):[[:space:]]*/s#^[[:space:]]*(tag|version):[[:space:]]*.*#  \1: ${RELEASE_TAG}#" "$MANIFEST_PATH" || true
+sed -E -i "0,/^[[:space:]]*tag:[[:space:]]*/s#^[[:space:]]*tag:[[:space:]]*.*#  tag: ${RELEASE_TAG}#" "$MANIFEST_PATH" || true
+sed -E -i "0,/^[[:space:]]*version:[[:space:]]*/s#^[[:space:]]*version:[[:space:]]*.*#  version: ${RELEASE_VERSION}#" "$MANIFEST_PATH" || true
 
-if git diff --quiet -- "$MANIFEST_PATH"; then
+if [ -z "$(git status --porcelain -- "$MANIFEST_PATH")" ]; then
   echo "No manifest changes detected in '$MANIFEST_PATH'."
   exit 0
 fi

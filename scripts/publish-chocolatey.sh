@@ -9,7 +9,7 @@ source "$SCRIPT_DIR/lib/release-assets.sh"
 require_cmd curl
 require_cmd jq
 require_cmd sha256sum
-require_cmd zip
+require_cmd dotnet
 require_env CHOCOLATEY_API_KEY
 
 RELEASE_TAG="$(normalize_release_tag "${1:-}")"
@@ -25,9 +25,9 @@ PACKAGE_AUTHORS="${CHOCOLATEY_PACKAGE_AUTHORS:-Consolonia Team}"
 PROJECT_URL="${CHOCOLATEY_PROJECT_URL:-https://github.com/$(github_repository)}"
 
 RELEASE_JSON="$(release_json_by_tag "$RELEASE_TAG")"
-INSTALLER_NAME="$(asset_name_by_regex "$RELEASE_JSON" '\\.msi$')"
+INSTALLER_NAME="$(asset_name_by_regex "$RELEASE_JSON" '\.msi$')"
 if [ -z "$INSTALLER_NAME" ]; then
-  INSTALLER_NAME="$(asset_name_by_regex "$RELEASE_JSON" '\\.exe$')"
+  INSTALLER_NAME="$(asset_name_by_regex "$RELEASE_JSON" '\.exe$')"
 fi
 
 if [ -z "$INSTALLER_NAME" ]; then
@@ -38,7 +38,12 @@ fi
 WORK_DIR="$(mktemp -d)"
 trap 'rm -rf "$WORK_DIR"' EXIT
 
-INSTALLER_PATH="$WORK_DIR/$INSTALLER_NAME"
+INSTALLER_DIR="$WORK_DIR/installer"
+PACKAGE_DIR="$WORK_DIR/package"
+OUTPUT_DIR="$WORK_DIR/output"
+mkdir -p "$INSTALLER_DIR" "$PACKAGE_DIR/tools" "$OUTPUT_DIR"
+
+INSTALLER_PATH="$INSTALLER_DIR/$INSTALLER_NAME"
 download_asset_by_name "$RELEASE_JSON" "$INSTALLER_NAME" "$INSTALLER_PATH"
 INSTALLER_URL="$(asset_url_by_name "$RELEASE_JSON" "$INSTALLER_NAME")"
 INSTALLER_SHA256="$(sha256sum "$INSTALLER_PATH" | awk '{print $1}')"
@@ -51,9 +56,7 @@ if [ "$INSTALLER_EXTENSION" = "msi" ]; then
   SILENT_ARGS='/qn /norestart'
 fi
 
-mkdir -p "$WORK_DIR/tools"
-
-cat > "$WORK_DIR/$PACKAGE_ID.nuspec" <<EOF
+cat > "$PACKAGE_DIR/$PACKAGE_ID.nuspec" <<EOF
 <?xml version="1.0"?>
 <package>
   <metadata>
@@ -69,7 +72,7 @@ cat > "$WORK_DIR/$PACKAGE_ID.nuspec" <<EOF
 </package>
 EOF
 
-cat > "$WORK_DIR/tools/chocolateyinstall.ps1" <<EOF
+cat > "$PACKAGE_DIR/tools/chocolateyinstall.ps1" <<EOF
 \$ErrorActionPreference = 'Stop'
 \$packageName = '$PACKAGE_ID'
 \$url64 = '$INSTALLER_URL'
@@ -87,12 +90,26 @@ cat > "$WORK_DIR/tools/chocolateyinstall.ps1" <<EOF
 Install-ChocolateyPackage @packageArgs
 EOF
 
-NUPKG_PATH="$WORK_DIR/${PACKAGE_ID}.${RELEASE_VERSION}.nupkg"
-(cd "$WORK_DIR" && zip -rq "$NUPKG_PATH" .)
+if ! command -v nuget >/dev/null 2>&1; then
+  dotnet tool update --global NuGet.CommandLine >/dev/null 2>&1 || dotnet tool install --global NuGet.CommandLine >/dev/null 2>&1
+  export PATH="$HOME/.dotnet/tools:$PATH"
+fi
+require_cmd nuget
 
-curl -fsS --retry 3 --retry-delay 2 \
-  -H "X-NuGet-ApiKey: ${CHOCOLATEY_API_KEY}" \
-  --upload-file "$NUPKG_PATH" \
-  "https://push.chocolatey.org/"
+nuget pack "$PACKAGE_DIR/$PACKAGE_ID.nuspec" \
+  -BasePath "$PACKAGE_DIR" \
+  -OutputDirectory "$OUTPUT_DIR" \
+  -NonInteractive
+
+NUPKG_PATH="$OUTPUT_DIR/${PACKAGE_ID}.${RELEASE_VERSION}.nupkg"
+if [ ! -f "$NUPKG_PATH" ]; then
+  echo "Expected package '$NUPKG_PATH' was not generated." >&2
+  exit 1
+fi
+
+dotnet nuget push "$NUPKG_PATH" \
+  --source "https://push.chocolatey.org/" \
+  --api-key "$CHOCOLATEY_API_KEY" \
+  --skip-duplicate
 
 echo "Published Chocolatey package ${PACKAGE_ID} ${RELEASE_VERSION}."
