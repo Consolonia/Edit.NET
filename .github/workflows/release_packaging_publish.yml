@@ -205,17 +205,19 @@ jobs:
     if: ${{ needs.package_and_release.result == 'success' && needs.evaluate_trigger.outputs.should_publish_ecosystems == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      WINGET_PUBLISH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN || secrets.WINGET_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Publish to WinGet (optional)
-        if: ${{ vars.WINGET_PACKAGE_IDENTIFIER != '' && (secrets.PERSONAL_ACCESS_TOKEN != '' || secrets.WINGET_TOKEN != '') }}
+        if: ${{ vars.WINGET_PACKAGE_IDENTIFIER != '' && env.WINGET_PUBLISH_TOKEN != '' }}
         uses: vedantmgoyal9/winget-releaser@v2
         with:
           identifier: ${{ vars.WINGET_PACKAGE_IDENTIFIER }}
           installers-regex: \.(msi|msix|exe)$
           release-tag: ${{ needs.package_and_release.outputs.release_tag }}
-          token: ${{ secrets.PERSONAL_ACCESS_TOKEN || secrets.WINGET_TOKEN }}
+          token: ${{ env.WINGET_PUBLISH_TOKEN }}
 
       - name: Publish to Chocolatey (optional)
         env:
