@@ -5,6 +5,11 @@ on:
     workflows: ["General Build"]
     types:
       - completed
+  pull_request:
+      branches: [main, pre-main]
+      paths:
+          - .github/workflows/release_packaging_publish.yml
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -20,7 +25,14 @@ env:
   ARTIFACTS_DIR: ./artifacts
 
 jobs:
+  validate_workflow:
+     if: ${{ github.event_name == 'pull_request' }}
+     runs-on: ubuntu-latest
+     steps:
+       - uses: actions/checkout@v4
+       - uses: rhysd/actionlint@v1
   evaluate_trigger:
+    if: ${{ github.event_name == 'workflow_run' }}
     runs-on: ubuntu-latest
     outputs:
       should_package: ${{ steps.evaluate.outputs.should_package }}
@@ -63,11 +75,11 @@ jobs:
             setOutputs(true, false, false);
 
   package_and_release:
+    if: ${{ github.event_name == 'workflow_run' && needs.evaluate_trigger.outputs.should_package == 'true' }
     needs: evaluate_trigger
     outputs:
       release_tag: ${{ steps.release_meta.outputs.release_tag }}
       release_version: ${{ steps.release_meta.outputs.release_version }}
-    if: ${{ needs.evaluate_trigger.outputs.should_package == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
