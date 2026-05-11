@@ -190,82 +190,83 @@ jobs:
             artifacts/*.msix
             artifacts/*.exe
 
-  publish_ecosystems:
-    needs: [evaluate_trigger, package_and_release]
-    if: ${{ needs.package_and_release.result == 'success' && needs.evaluate_trigger.outputs.should_publish_ecosystems == 'true' }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    env:
-      WINGET_PUBLISH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN || secrets.WINGET_TOKEN }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Publish to WinGet (optional)
-        if: ${{ vars.WINGET_PACKAGE_IDENTIFIER != '' && env.WINGET_PUBLISH_TOKEN != '' }}
-        uses: vedantmgoyal9/winget-releaser@v2
-        with:
-          identifier: ${{ vars.WINGET_PACKAGE_IDENTIFIER }}
-          installers-regex: \.(msi|msix|exe)$
-          release-tag: ${{ needs.package_and_release.outputs.release_tag }}
-          token: ${{ env.WINGET_PUBLISH_TOKEN }}
-
-      - name: Publish to Chocolatey (optional)
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CHOCOLATEY_API_KEY: ${{ secrets.CHOCOLATEY_API_KEY }}
-          CHOCOLATEY_PACKAGE_ID: ${{ vars.CHOCOLATEY_PACKAGE_ID }}
-        run: |
-          if [ -z "${CHOCOLATEY_API_KEY:-}" ]; then
-            echo "CHOCOLATEY_API_KEY secret is not configured. Skipping Chocolatey publish."
-            exit 0
-          fi
-
-          if [ ! -f "./scripts/publish-chocolatey.sh" ]; then
-            echo "scripts/publish-chocolatey.sh not found. Skipping Chocolatey publish."
-            exit 0
-          fi
-
-          chmod +x ./scripts/publish-chocolatey.sh
-          ./scripts/publish-chocolatey.sh "${{ needs.package_and_release.outputs.release_tag }}"
-
-      - name: Publish to AUR (optional)
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          AUR_SSH_PRIVATE_KEY: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
-          AUR_PACKAGE_NAME: ${{ vars.AUR_PACKAGE_NAME }}
-          AUR_BINARY_NAME: ${{ vars.AUR_BINARY_NAME }}
-        run: |
-          if [ -z "${AUR_SSH_PRIVATE_KEY:-}" ] || [ -z "${AUR_PACKAGE_NAME:-}" ]; then
-            echo "AUR credentials or package name not configured. Skipping AUR publish."
-            exit 0
-          fi
-
-          if [ ! -f "./scripts/publish-aur.sh" ]; then
-            echo "scripts/publish-aur.sh not found. Skipping AUR publish."
-            exit 0
-          fi
-
-          chmod +x ./scripts/publish-aur.sh
-          ./scripts/publish-aur.sh "${{ needs.package_and_release.outputs.release_tag }}"
-
-      - name: Publish to Flathub (optional)
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          FLATHUB_TOKEN: ${{ secrets.FLATHUB_TOKEN || secrets.PERSONAL_ACCESS_TOKEN }}
-          FLATHUB_APP_ID: ${{ vars.FLATHUB_APP_ID }}
-          FLATHUB_MANIFEST_REPO: ${{ vars.FLATHUB_MANIFEST_REPO }}
-          FLATHUB_MANIFEST_PATH: ${{ vars.FLATHUB_MANIFEST_PATH }}
-          FLATHUB_BRANCH: ${{ vars.FLATHUB_BRANCH }}
-        run: |
-          if [ -z "${FLATHUB_TOKEN:-}" ] || [ -z "${FLATHUB_APP_ID:-}" ]; then
-            echo "Flathub token or app id not configured. Skipping Flathub publish."
-            exit 0
-          fi
-
-          if [ ! -f "./scripts/publish-flathub.sh" ]; then
-            echo "scripts/publish-flathub.sh not found. Skipping Flathub publish."
-            exit 0
-          fi
-
-          chmod +x ./scripts/publish-flathub.sh
-          ./scripts/publish-flathub.sh "${{ needs.package_and_release.outputs.release_tag }}"
+#
+#  publish_ecosystems:
+#    needs: [evaluate_trigger, package_and_release]
+#    if: ${{ needs.package_and_release.result == 'success' && needs.evaluate_trigger.outputs.should_publish_ecosystems == 'true' }}
+#    runs-on: ubuntu-latest
+#    timeout-minutes: 20
+#    env:
+#      WINGET_PUBLISH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN || secrets.WINGET_TOKEN }}
+#    steps:
+#      - uses: actions/checkout@v4
+#
+#      - name: Publish to WinGet (optional)
+#        if: ${{ vars.WINGET_PACKAGE_IDENTIFIER != '' && env.WINGET_PUBLISH_TOKEN != '' }}
+#        uses: vedantmgoyal9/winget-releaser@v2
+#        with:
+#          identifier: ${{ vars.WINGET_PACKAGE_IDENTIFIER }}
+#          installers-regex: \.(msi|msix|exe)$
+#          release-tag: ${{ needs.package_and_release.outputs.release_tag }}
+#          token: ${{ env.WINGET_PUBLISH_TOKEN }}
+#
+#      - name: Publish to Chocolatey (optional)
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#          CHOCOLATEY_API_KEY: ${{ secrets.CHOCOLATEY_API_KEY }}
+#          CHOCOLATEY_PACKAGE_ID: ${{ vars.CHOCOLATEY_PACKAGE_ID }}
+#        run: |
+#          if [ -z "${CHOCOLATEY_API_KEY:-}" ]; then
+#            echo "CHOCOLATEY_API_KEY secret is not configured. Skipping Chocolatey publish."
+#            exit 0
+#          fi
+#
+#          if [ ! -f "./scripts/publish-chocolatey.sh" ]; then
+#            echo "scripts/publish-chocolatey.sh not found. Skipping Chocolatey publish."
+#            exit 0
+#          fi
+#
+#          chmod +x ./scripts/publish-chocolatey.sh
+#          ./scripts/publish-chocolatey.sh "${{ needs.package_and_release.outputs.release_tag }}"
+#
+#      - name: Publish to AUR (optional)
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#          AUR_SSH_PRIVATE_KEY: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+#          AUR_PACKAGE_NAME: ${{ vars.AUR_PACKAGE_NAME }}
+#          AUR_BINARY_NAME: ${{ vars.AUR_BINARY_NAME }}
+#        run: |
+#          if [ -z "${AUR_SSH_PRIVATE_KEY:-}" ] || [ -z "${AUR_PACKAGE_NAME:-}" ]; then
+#            echo "AUR credentials or package name not configured. Skipping AUR publish."
+#            exit 0
+#          fi
+#
+#          if [ ! -f "./scripts/publish-aur.sh" ]; then
+#            echo "scripts/publish-aur.sh not found. Skipping AUR publish."
+#            exit 0
+#          fi
+#
+#          chmod +x ./scripts/publish-aur.sh
+#          ./scripts/publish-aur.sh "${{ needs.package_and_release.outputs.release_tag }}"
+#
+#      - name: Publish to Flathub (optional)
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#          FLATHUB_TOKEN: ${{ secrets.FLATHUB_TOKEN || secrets.PERSONAL_ACCESS_TOKEN }}
+#          FLATHUB_APP_ID: ${{ vars.FLATHUB_APP_ID }}
+#          FLATHUB_MANIFEST_REPO: ${{ vars.FLATHUB_MANIFEST_REPO }}
+#          FLATHUB_MANIFEST_PATH: ${{ vars.FLATHUB_MANIFEST_PATH }}
+#          FLATHUB_BRANCH: ${{ vars.FLATHUB_BRANCH }}
+#        run: |
+#          if [ -z "${FLATHUB_TOKEN:-}" ] || [ -z "${FLATHUB_APP_ID:-}" ]; then
+#            echo "Flathub token or app id not configured. Skipping Flathub publish."
+#            exit 0
+#          fi
+#
+#          if [ ! -f "./scripts/publish-flathub.sh" ]; then
+#            echo "scripts/publish-flathub.sh not found. Skipping Flathub publish."
+#            exit 0
+#          fi
+#
+#          chmod +x ./scripts/publish-flathub.sh
+#          ./scripts/publish-flathub.sh "${{ needs.package_and_release.outputs.release_tag }}"
