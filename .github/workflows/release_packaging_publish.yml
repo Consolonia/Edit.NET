@@ -212,12 +212,18 @@ jobs:
           set -euo pipefail
           mkdir -p "$ARTIFACTS_DIR"
 
-          dotnetpackager appimage from-directory --directory "$ARTIFACTS_DIR/publish/linux-x64" --output "$ARTIFACTS_DIR/Edit.NET-${RELEASE_VERSION}-linux-x64.AppImage"
-          dotnetpackager deb from-directory --directory "$ARTIFACTS_DIR/publish/linux-x64" --output "$ARTIFACTS_DIR/Edit.NET_${RELEASE_VERSION}_amd64.deb"
-          dotnetpackager rpm from-directory --directory "$ARTIFACTS_DIR/publish/linux-x64" --output "$ARTIFACTS_DIR/Edit.NET-${RELEASE_VERSION}-1.x86_64.rpm"
-          dotnetpackager dmg from-directory --directory "$ARTIFACTS_DIR/publish/osx-x64" --output "$ARTIFACTS_DIR/Edit.NET-${RELEASE_VERSION}.dmg"
-          dotnetpackager msix from-directory --directory "$ARTIFACTS_DIR/publish/win-x64" --output "$ARTIFACTS_DIR/Edit.NET-${RELEASE_VERSION}.msix"
-          dotnetpackager exe from-directory --directory "$ARTIFACTS_DIR/publish/win-x64" --output "$ARTIFACTS_DIR/Edit.NET-${RELEASE_VERSION}-win-x64.exe"
+          ICON_PATH="./Icon.png"
+          if [ ! -f "$ICON_PATH" ]; then
+            echo "Expected icon file '$ICON_PATH' was not found." >&2
+            exit 1
+          fi
+
+          dotnetpackager appimage from-directory --directory "$ARTIFACTS_DIR/publish/linux-x64" --icon "$ICON_PATH" --output "$ARTIFACTS_DIR/Edit.NET-${RELEASE_VERSION}-linux-x64.AppImage"
+          dotnetpackager deb from-directory --directory "$ARTIFACTS_DIR/publish/linux-x64" --icon "$ICON_PATH" --output "$ARTIFACTS_DIR/Edit.NET_${RELEASE_VERSION}_amd64.deb"
+          dotnetpackager rpm from-directory --directory "$ARTIFACTS_DIR/publish/linux-x64" --icon "$ICON_PATH" --output "$ARTIFACTS_DIR/Edit.NET-${RELEASE_VERSION}-1.x86_64.rpm"
+          dotnetpackager dmg from-directory --directory "$ARTIFACTS_DIR/publish/osx-x64" --icon "$ICON_PATH" --output "$ARTIFACTS_DIR/Edit.NET-${RELEASE_VERSION}.dmg"
+          dotnetpackager msix from-directory --directory "$ARTIFACTS_DIR/publish/win-x64" --icon "$ICON_PATH" --output "$ARTIFACTS_DIR/Edit.NET-${RELEASE_VERSION}.msix"
+          dotnetpackager exe from-directory --directory "$ARTIFACTS_DIR/publish/win-x64" --icon "$ICON_PATH" --arch x64 --output "$ARTIFACTS_DIR/Edit.NET-${RELEASE_VERSION}-win-x64.exe"
 
       - name: Upload packaged artifacts
         uses: actions/upload-artifact@v4
