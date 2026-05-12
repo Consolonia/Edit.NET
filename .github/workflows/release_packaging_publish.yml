@@ -258,8 +258,8 @@ jobs:
             fi
           done
 
-          ln -sf "Edit.NET" "$ARTIFACTS_DIR/publish/linux-x64/$LINUX_EXECUTABLE_NAME"
-          ln -sf "Edit.NET" "$ARTIFACTS_DIR/publish/osx-x64/$LINUX_EXECUTABLE_NAME"
+          cp -f "$ARTIFACTS_DIR/publish/linux-x64/Edit.NET" "$ARTIFACTS_DIR/publish/linux-x64/$LINUX_EXECUTABLE_NAME"
+          cp -f "$ARTIFACTS_DIR/publish/osx-x64/Edit.NET" "$ARTIFACTS_DIR/publish/osx-x64/$LINUX_EXECUTABLE_NAME"
           cp -f "$ARTIFACTS_DIR/publish/win-x64/Edit.NET.exe" "$ARTIFACTS_DIR/publish/win-x64/$WINDOWS_EXECUTABLE_NAME"
 
           COMMON_PACKAGE_ARGS=(
