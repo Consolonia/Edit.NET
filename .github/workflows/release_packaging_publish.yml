@@ -198,6 +198,24 @@ jobs:
           dotnet tool install --global DotnetPackaging.Tool
           echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
 
+      - name: Prepare MSIX signing certificate (optional)
+        env:
+          MSIX_PFX_BASE64: ${{ secrets.MSIX_PFX_BASE64 }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${MSIX_PFX_BASE64:-}" ]; then
+            echo "MSIX_PFX_PATH=" >> "$GITHUB_ENV"
+            echo "MSIX_PFX_BASE64 is not configured. MSIX will use development signing."
+            exit 0
+          fi
+
+          MSIX_CERT_DIR="$RUNNER_TEMP/msix-signing"
+          mkdir -p "$MSIX_CERT_DIR"
+          MSIX_PFX_PATH="$MSIX_CERT_DIR/editnet-msix.pfx"
+          printf '%s' "$MSIX_PFX_BASE64" | base64 --decode > "$MSIX_PFX_PATH"
+          echo "MSIX_PFX_PATH=$MSIX_PFX_PATH" >> "$GITHUB_ENV"
+
       - name: Publish binaries for package formats
         run: |
           set -euo pipefail
@@ -208,6 +226,10 @@ jobs:
           dotnet publish "$PROJECT_PATH" --configuration release --runtime osx-x64 --self-contained true --no-restore --output "$ARTIFACTS_DIR/publish/osx-x64"
 
       - name: Build release packages
+        env:
+          MSIX_PFX_PASSWORD: ${{ secrets.MSIX_PFX_PASSWORD }}
+          MSIX_PUBLISHER: ${{ vars.MSIX_PUBLISHER }}
+          MSIX_PUBLISHER_DISPLAY_NAME: ${{ vars.MSIX_PUBLISHER_DISPLAY_NAME }}
         run: |
           set -euo pipefail
           mkdir -p "$ARTIFACTS_DIR"
@@ -218,12 +240,84 @@ jobs:
             exit 1
           fi
 
-          dotnetpackager appimage from-directory --directory "$ARTIFACTS_DIR/publish/linux-x64" --icon "$ICON_PATH" --output "$ARTIFACTS_DIR/Edit.NET-${RELEASE_VERSION}-linux-x64.AppImage"
-          dotnetpackager deb from-directory --directory "$ARTIFACTS_DIR/publish/linux-x64" --icon "$ICON_PATH" --output "$ARTIFACTS_DIR/Edit.NET_${RELEASE_VERSION}_amd64.deb"
-          dotnetpackager rpm from-directory --directory "$ARTIFACTS_DIR/publish/linux-x64" --icon "$ICON_PATH" --output "$ARTIFACTS_DIR/Edit.NET-${RELEASE_VERSION}-1.x86_64.rpm"
-          dotnetpackager dmg from-directory --directory "$ARTIFACTS_DIR/publish/osx-x64" --icon "$ICON_PATH" --output "$ARTIFACTS_DIR/Edit.NET-${RELEASE_VERSION}.dmg"
-          dotnetpackager msix from-directory --directory "$ARTIFACTS_DIR/publish/win-x64" --icon "$ICON_PATH" --output "$ARTIFACTS_DIR/Edit.NET-${RELEASE_VERSION}.msix"
-          dotnetpackager exe from-directory --directory "$ARTIFACTS_DIR/publish/win-x64" --icon "$ICON_PATH" --arch x64 --output "$ARTIFACTS_DIR/Edit.NET-${RELEASE_VERSION}-win-x64.exe"
+          APP_DISPLAY_NAME="Edit.NET"
+          APP_SUMMARY="Terminal-based text editor built with Avalonia and Consolonia"
+          APP_COMMENT="Run edit.net to start the editor"
+          APP_HOMEPAGE="https://github.com/Consolonia/Edit.NET"
+          APP_VENDOR="Consolonia"
+          APP_ID="com.consolonia.editnet"
+          LINUX_EXECUTABLE_NAME="edit.net"
+          WINDOWS_EXECUTABLE_NAME="edit.net.exe"
+          MSIX_PUBLISHER_VALUE="${MSIX_PUBLISHER:-CN=DeveloperPackage}"
+          MSIX_PUBLISHER_DISPLAY_NAME_VALUE="${MSIX_PUBLISHER_DISPLAY_NAME:-Consolonia}"
+
+          for REQUIRED_EXECUTABLE in "$ARTIFACTS_DIR/publish/linux-x64/Edit.NET" "$ARTIFACTS_DIR/publish/osx-x64/Edit.NET" "$ARTIFACTS_DIR/publish/win-x64/Edit.NET.exe"; do
+            if [ ! -f "$REQUIRED_EXECUTABLE" ]; then
+              echo "Expected executable '$REQUIRED_EXECUTABLE' was not found." >&2
+              exit 1
+            fi
+          done
+
+          ln -sf "Edit.NET" "$ARTIFACTS_DIR/publish/linux-x64/$LINUX_EXECUTABLE_NAME"
+          ln -sf "Edit.NET" "$ARTIFACTS_DIR/publish/osx-x64/$LINUX_EXECUTABLE_NAME"
+          cp -f "$ARTIFACTS_DIR/publish/win-x64/Edit.NET.exe" "$ARTIFACTS_DIR/publish/win-x64/$WINDOWS_EXECUTABLE_NAME"
+
+          COMMON_PACKAGE_ARGS=(
+            --application-name "$APP_DISPLAY_NAME"
+            --summary "$APP_SUMMARY"
+            --comment "$APP_COMMENT"
+            --homepage "$APP_HOMEPAGE"
+            --company "$APP_VENDOR"
+            --appId "$APP_ID"
+            --version "$RELEASE_VERSION"
+            --executable-name "$LINUX_EXECUTABLE_NAME"
+            --is-terminal
+            --main-category Utility
+            --icon "$ICON_PATH"
+          )
+
+          dotnetpackager appimage from-directory --directory "$ARTIFACTS_DIR/publish/linux-x64" --output "$ARTIFACTS_DIR/Edit.NET-${RELEASE_VERSION}-linux-x64.AppImage" "${COMMON_PACKAGE_ARGS[@]}"
+          dotnetpackager deb from-directory --directory "$ARTIFACTS_DIR/publish/linux-x64" --output "$ARTIFACTS_DIR/Edit.NET_${RELEASE_VERSION}_amd64.deb" "${COMMON_PACKAGE_ARGS[@]}"
+          dotnetpackager rpm from-directory --directory "$ARTIFACTS_DIR/publish/linux-x64" --output "$ARTIFACTS_DIR/Edit.NET-${RELEASE_VERSION}-1.x86_64.rpm" "${COMMON_PACKAGE_ARGS[@]}"
+          dotnetpackager dmg from-directory --directory "$ARTIFACTS_DIR/publish/osx-x64" --output "$ARTIFACTS_DIR/Edit.NET-${RELEASE_VERSION}.dmg" "${COMMON_PACKAGE_ARGS[@]}"
+
+          MSIX_ARGS=(
+            --directory "$ARTIFACTS_DIR/publish/win-x64"
+            --output "$ARTIFACTS_DIR/Edit.NET-${RELEASE_VERSION}.msix"
+            --application-name "$APP_DISPLAY_NAME"
+            --publisher "$MSIX_PUBLISHER_VALUE"
+            --publisher-display-name "$MSIX_PUBLISHER_DISPLAY_NAME_VALUE"
+            --version "$RELEASE_VERSION"
+            --appId "$APP_ID"
+            --executable-name "$WINDOWS_EXECUTABLE_NAME"
+            --description "$APP_COMMENT"
+            --icon "$ICON_PATH"
+            --arch x64
+          )
+
+          if [ -n "${MSIX_PFX_PATH:-}" ]; then
+            MSIX_ARGS+=(--pfx "$MSIX_PFX_PATH")
+            if [ -n "${MSIX_PFX_PASSWORD:-}" ]; then
+              MSIX_ARGS+=(--pfx-password "$MSIX_PFX_PASSWORD")
+            fi
+          fi
+
+          dotnetpackager msix from-directory "${MSIX_ARGS[@]}"
+
+          dotnetpackager exe from-directory \
+            --directory "$ARTIFACTS_DIR/publish/win-x64" \
+            --output "$ARTIFACTS_DIR/Edit.NET-${RELEASE_VERSION}-win-x64.exe" \
+            --application-name "$APP_DISPLAY_NAME" \
+            --summary "$APP_SUMMARY" \
+            --comment "$APP_COMMENT" \
+            --homepage "$APP_HOMEPAGE" \
+            --company "$APP_VENDOR" \
+            --appId "$APP_ID" \
+            --version "$RELEASE_VERSION" \
+            --executable-name "$WINDOWS_EXECUTABLE_NAME" \
+            --icon "$ICON_PATH" \
+            --setup-logo "$ICON_PATH" \
+            --arch x64
 
       - name: Upload packaged artifacts
         uses: actions/upload-artifact@v4
