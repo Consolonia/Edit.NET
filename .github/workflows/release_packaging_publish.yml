@@ -216,6 +216,24 @@ jobs:
           printf '%s' "$MSIX_PFX_BASE64" | base64 --decode > "$MSIX_PFX_PATH"
           echo "MSIX_PFX_PATH=$MSIX_PFX_PATH" >> "$GITHUB_ENV"
 
+      - name: Prepare EXE signing certificate (optional)
+        env:
+          EXE_PFX_BASE64: ${{ secrets.EXE_PFX_BASE64 || secrets.MSIX_PFX_BASE64 }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${EXE_PFX_BASE64:-}" ]; then
+            echo "EXE_PFX_PATH=" >> "$GITHUB_ENV"
+            echo "EXE_PFX_BASE64/MSIX_PFX_BASE64 is not configured. EXE will be unsigned."
+            exit 0
+          fi
+
+          EXE_CERT_DIR="$RUNNER_TEMP/exe-signing"
+          mkdir -p "$EXE_CERT_DIR"
+          EXE_PFX_PATH="$EXE_CERT_DIR/editnet-exe.pfx"
+          printf '%s' "$EXE_PFX_BASE64" | base64 --decode > "$EXE_PFX_PATH"
+          echo "EXE_PFX_PATH=$EXE_PFX_PATH" >> "$GITHUB_ENV"
+
       - name: Publish binaries for package formats
         run: |
           set -euo pipefail
@@ -228,6 +246,7 @@ jobs:
       - name: Build release packages
         env:
           MSIX_PFX_PASSWORD: ${{ secrets.MSIX_PFX_PASSWORD }}
+          EXE_PFX_PASSWORD: ${{ secrets.EXE_PFX_PASSWORD || secrets.MSIX_PFX_PASSWORD }}
           MSIX_PUBLISHER: ${{ vars.MSIX_PUBLISHER }}
           MSIX_PUBLISHER_DISPLAY_NAME: ${{ vars.MSIX_PUBLISHER_DISPLAY_NAME }}
         run: |
@@ -304,20 +323,30 @@ jobs:
 
           dotnetpackager msix from-directory "${MSIX_ARGS[@]}"
 
-          dotnetpackager exe from-directory \
-            --directory "$ARTIFACTS_DIR/publish/win-x64" \
-            --output "$ARTIFACTS_DIR/Edit.NET-${RELEASE_VERSION}-win-x64.exe" \
-            --application-name "$APP_DISPLAY_NAME" \
-            --summary "$APP_SUMMARY" \
-            --comment "$APP_COMMENT" \
-            --homepage "$APP_HOMEPAGE" \
-            --company "$APP_VENDOR" \
-            --appId "$APP_ID" \
-            --version "$RELEASE_VERSION" \
-            --executable-name "$WINDOWS_EXECUTABLE_NAME" \
-            --icon "$ICON_PATH" \
-            --setup-logo "$ICON_PATH" \
+          EXE_ARGS=(
+            --directory "$ARTIFACTS_DIR/publish/win-x64"
+            --output "$ARTIFACTS_DIR/Edit.NET-${RELEASE_VERSION}-win-x64.exe"
+            --application-name "$APP_DISPLAY_NAME"
+            --summary "$APP_SUMMARY"
+            --comment "$APP_COMMENT"
+            --homepage "$APP_HOMEPAGE"
+            --company "$APP_VENDOR"
+            --appId "$APP_ID"
+            --version "$RELEASE_VERSION"
+            --executable-name "$WINDOWS_EXECUTABLE_NAME"
+            --icon "$ICON_PATH"
+            --setup-logo "$ICON_PATH"
             --arch x64
+          )
+
+          if [ -n "${EXE_PFX_PATH:-}" ]; then
+            EXE_ARGS+=(--pfx "$EXE_PFX_PATH")
+            if [ -n "${EXE_PFX_PASSWORD:-}" ]; then
+              EXE_ARGS+=(--pfx-password "$EXE_PFX_PASSWORD")
+            fi
+          fi
+
+          dotnetpackager exe from-directory "${EXE_ARGS[@]}"
 
       - name: Upload packaged artifacts
         uses: actions/upload-artifact@v4
