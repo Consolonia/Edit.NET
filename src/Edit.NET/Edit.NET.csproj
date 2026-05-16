@@ -20,7 +20,7 @@
         <Title>Edit.NET</Title>
         <Description>Terminal-based text editor built with Avalonia and Consolonia, providing a powerful and efficient editing experience in the console.</Description>
         <PackageTags>terminal;console;editor;text-editor;avalonia;consolonia;dotnet-tool;cross-platform;edit.net;editdotnet</PackageTags>
-        <ToolCommandName>Edit.NET</ToolCommandName>
+        <ToolCommandName>edit.net</ToolCommandName>
         <ProjectUrl>https://github.com/consolonia/Edit.NET</ProjectUrl>
         <RepositoryUrl>https://github.com/consolonia/Edit.NET</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
