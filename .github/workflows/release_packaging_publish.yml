@@ -231,7 +231,7 @@ jobs:
           EXE_CERT_DIR="$RUNNER_TEMP/exe-signing"
           mkdir -p "$EXE_CERT_DIR"
           EXE_PFX_PATH="$EXE_CERT_DIR/editnet-exe.pfx"
-          printf '%s' "$EXE_PFX_BASE64" | base64 --decode > "$EXE_PFX_PATH"
+          printf '%s' "$EXE_PFX_BASE64" | base64 --decode > "$EXE_PFX_PATH" 
           echo "EXE_PFX_PATH=$EXE_PFX_PATH" >> "$GITHUB_ENV"
 
       - name: Publish binaries for package formats
@@ -266,7 +266,7 @@ jobs:
           APP_VENDOR="Consolonia"
           APP_ID="EditDotNet"
           LINUX_EXECUTABLE_NAME="edit.net"
-          WINDOWS_EXECUTABLE_NAME="Edit.NET.exe"
+          WINDOWS_EXECUTABLE_NAME="edit.net.exe"
           MSIX_PUBLISHER_VALUE="${MSIX_PUBLISHER:-CN=Consolonia}"
           MSIX_PUBLISHER_DISPLAY_NAME_VALUE="${MSIX_PUBLISHER_DISPLAY_NAME:-Consolonia}"
 
@@ -280,6 +280,39 @@ jobs:
           cp -f "$ARTIFACTS_DIR/publish/linux-x64/Edit.NET" "$ARTIFACTS_DIR/publish/linux-x64/$LINUX_EXECUTABLE_NAME"
           cp -f "$ARTIFACTS_DIR/publish/osx-x64/Edit.NET" "$ARTIFACTS_DIR/publish/osx-x64/$LINUX_EXECUTABLE_NAME"
           cp -f "$ARTIFACTS_DIR/publish/win-x64/Edit.NET.exe" "$ARTIFACTS_DIR/publish/win-x64/$WINDOWS_EXECUTABLE_NAME"
+
+          # Generate AppxManifest.xml with AppExecutionAlias to ensure the app is in the PATH (for MSIX)
+          printf '<?xml version="1.0" encoding="utf-8"?>\n' > "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
+          printf '<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" \n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
+          printf '         xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" \n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
+          printf '         xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5" \n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
+          printf '         xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities" \n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
+          printf '         IgnorableNamespaces="uap uap5 rescap">\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
+          printf '  <Identity Name="%s" Publisher="%s" Version="%s" ProcessorArchitecture="x64" />\n' "$APP_ID" "$MSIX_PUBLISHER_VALUE" "$RELEASE_VERSION" >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
+          printf '  <Properties>\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
+          printf '    <DisplayName>%s</DisplayName>\n' "$APP_DISPLAY_NAME" >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
+          printf '    <PublisherDisplayName>%s</PublisherDisplayName>\n' "$MSIX_PUBLISHER_DISPLAY_NAME_VALUE" >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
+          printf '    <Logo>Assets\\StoreLogo.png</Logo>\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
+          printf '  </Properties>\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
+          printf '  <Resources>\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
+          printf '    <Resource Language="en-US" />\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
+          printf '  </Resources>\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
+          printf '  <Applications>\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
+          printf '    <Application Id="App" Executable="%s" EntryPoint="Windows.FullTrustApplication">\n' "$WINDOWS_EXECUTABLE_NAME" >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
+          printf '      <uap:VisualElements DisplayName="%s" Description="%s" BackgroundColor="#000000" Square150x150Logo="Assets\\Square150x150Logo.png" Square44x44Logo="Assets\\Square44x44Logo.png" />\n' "$APP_DISPLAY_NAME" "$APP_SUMMARY" >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
+          printf '      <Extensions>\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
+          printf '        <uap5:Extension Category="windows.appExecutionAlias">\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
+          printf '          <uap5:AppExecutionAlias>\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
+          printf '            <uap5:ExecutionAlias Alias="edit.net.exe" />\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
+          printf '          </uap5:AppExecutionAlias>\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
+          printf '        </uap5:Extension>\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
+          printf '      </Extensions>\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
+          printf '    </Application>\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
+          printf '  </Applications>\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
+          printf '  <Capabilities>\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
+          printf '    <rescap:Capability Name="runFullTrust" />\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
+          printf '  </Capabilities>\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
+          printf '</Package>\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
 
           COMMON_PACKAGE_ARGS=(
             --application-name "$APP_DISPLAY_NAME"
@@ -338,6 +371,7 @@ jobs:
             --icon "$ICON_PATH"
             --setup-logo "$ICON_PATH"
             --background-color "#000000"
+            --is-terminal
             --arch x64
           )
 
