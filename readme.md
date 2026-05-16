@@ -6,7 +6,6 @@ Edit.NET is a powerful terminal-based text editor built with Avalonia and Consol
 ## Installation
 
 ### Windows
-- **MSIX (Recommended):** Download and install the `.msix` package. This automatically adds `edit.net` to your command-line path. You can then just type `edit.net` in any terminal to start the editor.
 - **EXE Installer:** Download and run the `.exe` installer. Note that this might not automatically add the application to your system PATH.
 
 ### Linux
@@ -21,3 +20,4 @@ Once installed, run the editor by typing:
 ```bash
 edit.net
 ```
+or by running it from the system menu or by searching for it in your application launcher.
