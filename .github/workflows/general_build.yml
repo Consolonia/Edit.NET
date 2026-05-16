@@ -30,7 +30,6 @@ jobs:
     timeout-minutes: 30
     env:
       IS_RELEASE_PUBLISH: ${{ (github.event_name == 'workflow_dispatch' || github.event.inputs.push_packages == 'true') && github.ref == 'refs/heads/main' }}
-      IS_PR_DISTRIBUTE: ${{ github.event_name == 'pull_request' }}
     defaults:
       run:
         working-directory: ./src
@@ -81,7 +80,7 @@ jobs:
         run: dotnet nuget push **/*.nupkg --api-key ${{ secrets.NUGET_KEY }} --source https://api.nuget.org/v3/index.json
 
       - name: Prepare release metadata
-        if: ${{ env.IS_RELEASE_PUBLISH == 'true' || env.IS_PR_DISTRIBUTE == 'true' }}
+        if: ${{ env.IS_RELEASE_PUBLISH == 'true' }}
         run: |
           set -euo pipefail
           VERSION_LITERAL=$(grep -oP '(?<=<VersionPrefix>).*?(?=</VersionPrefix>)' ../Directory.Build.props)
@@ -136,7 +135,7 @@ jobs:
           fi
 
       - name: Upload release metadata artifact
-        if: ${{ env.IS_RELEASE_PUBLISH == 'true' || env.IS_PR_DISTRIBUTE == 'true' }}
+        if: ${{ env.IS_RELEASE_PUBLISH == 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: release-metadata
