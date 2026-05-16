@@ -344,7 +344,6 @@ jobs:
             --executable-name "$WINDOWS_EXECUTABLE_NAME"
             --description "$APP_COMMENT"
             --icon "$ICON_PATH"
-            --background-color "#000000"
             --arch x64
           )
 
@@ -370,7 +369,6 @@ jobs:
             --executable-name "$WINDOWS_EXECUTABLE_NAME"
             --icon "$ICON_PATH"
             --setup-logo "$ICON_PATH"
-            --background-color "#000000"
             --is-terminal
             --arch x64
           )
