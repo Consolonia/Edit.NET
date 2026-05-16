@@ -5,6 +5,8 @@ Edit.NET is a powerful terminal-based text editor built with Avalonia and Consol
 
 ## Installation
 
+[Install the latest release](https://github.com/Consolonia/Edit.NET/releases/latest)
+
 ### Windows
 - **EXE Installer:** Download and run the `.exe` installer. Note that this might not automatically add the application to your system PATH.
 
