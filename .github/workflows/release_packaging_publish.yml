@@ -31,34 +31,32 @@ jobs:
     outputs:
       should_package: ${{ steps.evaluate.outputs.should_package }}
       should_create_release: ${{ steps.evaluate.outputs.should_create_release }}
-      should_publish_ecosystems: ${{ steps.evaluate.outputs.should_publish_ecosystems }}
     steps:
       - name: Evaluate trigger mode
         id: evaluate
         uses: actions/github-script@v7
         with:
           script: |
-            const setOutputs = (shouldPackage, shouldCreateRelease, shouldPublishEcosystems) => {
+            const setOutputs = (shouldPackage, shouldCreateRelease) => {
               core.setOutput('should_package', shouldPackage ? 'true' : 'false');
               core.setOutput('should_create_release', shouldCreateRelease ? 'true' : 'false');
-              core.setOutput('should_publish_ecosystems', shouldPublishEcosystems ? 'true' : 'false');
             };
 
             if (context.eventName === 'pull_request') {
               core.info('Direct PR debug mode detected. Running full packaging + release flow.');
-              setOutputs(true, true, true);
+              setOutputs(true, true);
               return;
             }
 
             if (context.eventName === 'workflow_dispatch') {
               core.info('Direct workflow_dispatch debug mode detected. Running full packaging + release flow.');
-              setOutputs(true, true, true);
+              setOutputs(true, true);
               return;
             }
 
             if (context.eventName !== 'workflow_run') {
               core.info(`Unsupported triggering event '${context.eventName}'. Packaging will be skipped.`);
-              setOutputs(false, false, false);
+              setOutputs(false, false);
               return;
             }
 
@@ -66,25 +64,25 @@ jobs:
 
             if (workflowRun.conclusion !== 'success') {
               core.info('General Build did not complete successfully. Packaging will be skipped.');
-              setOutputs(false, false, false);
+              setOutputs(false, false);
               return;
             }
 
             const isOfficialRelease = workflowRun.event === 'workflow_dispatch' && workflowRun.head_branch === 'main';
             if (isOfficialRelease) {
               core.info('Official release mode detected.');
-              setOutputs(true, true, true);
+              setOutputs(true, true);
               return;
             }
 
             if (workflowRun.event === 'pull_request') {
               core.info('Skipping PR workflow_run mode because direct pull_request trigger handles PR debugging.');
-              setOutputs(false, false, false);
+              setOutputs(false, false);
               return;
             }
 
             core.info(`Unsupported workflow_run source event '${workflowRun.event}'. Packaging will be skipped.`);
-            setOutputs(false, false, false);
+            setOutputs(false, false);
 
   package_and_release:
     if: ${{ needs.evaluate_trigger.outputs.should_package == 'true' }}
@@ -198,42 +196,6 @@ jobs:
           dotnet tool install --global DotnetPackaging.Tool
           echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
 
-      - name: Prepare MSIX signing certificate (optional)
-        env:
-          MSIX_PFX_BASE64: ${{ secrets.MSIX_PFX_BASE64 }}
-        run: |
-          set -euo pipefail
-
-          if [ -z "${MSIX_PFX_BASE64:-}" ]; then
-            echo "MSIX_PFX_PATH=" >> "$GITHUB_ENV"
-            echo "MSIX_PFX_BASE64 is not configured. MSIX will use development signing."
-            exit 0
-          fi
-
-          MSIX_CERT_DIR="$RUNNER_TEMP/msix-signing"
-          mkdir -p "$MSIX_CERT_DIR"
-          MSIX_PFX_PATH="$MSIX_CERT_DIR/editnet-msix.pfx"
-          printf '%s' "$MSIX_PFX_BASE64" | base64 --decode > "$MSIX_PFX_PATH"
-          echo "MSIX_PFX_PATH=$MSIX_PFX_PATH" >> "$GITHUB_ENV"
-
-      - name: Prepare EXE signing certificate (optional)
-        env:
-          EXE_PFX_BASE64: ${{ secrets.EXE_PFX_BASE64 || secrets.MSIX_PFX_BASE64 }}
-        run: |
-          set -euo pipefail
-
-          if [ -z "${EXE_PFX_BASE64:-}" ]; then
-            echo "EXE_PFX_PATH=" >> "$GITHUB_ENV"
-            echo "EXE_PFX_BASE64/MSIX_PFX_BASE64 is not configured. EXE will be unsigned."
-            exit 0
-          fi
-
-          EXE_CERT_DIR="$RUNNER_TEMP/exe-signing"
-          mkdir -p "$EXE_CERT_DIR"
-          EXE_PFX_PATH="$EXE_CERT_DIR/editnet-exe.pfx"
-          printf '%s' "$EXE_PFX_BASE64" | base64 --decode > "$EXE_PFX_PATH" 
-          echo "EXE_PFX_PATH=$EXE_PFX_PATH" >> "$GITHUB_ENV"
-
       - name: Publish binaries for package formats
         run: |
           set -euo pipefail
@@ -244,11 +206,6 @@ jobs:
           dotnet publish "$PROJECT_PATH" --configuration release --runtime osx-x64 --self-contained true --no-restore --output "$ARTIFACTS_DIR/publish/osx-x64"
 
       - name: Build release packages
-        env:
-          MSIX_PFX_PASSWORD: ${{ secrets.MSIX_PFX_PASSWORD }}
-          EXE_PFX_PASSWORD: ${{ secrets.EXE_PFX_PASSWORD || secrets.MSIX_PFX_PASSWORD }}
-          MSIX_PUBLISHER: ${{ vars.MSIX_PUBLISHER }}
-          MSIX_PUBLISHER_DISPLAY_NAME: ${{ vars.MSIX_PUBLISHER_DISPLAY_NAME }}
         run: |
           set -euo pipefail
           mkdir -p "$ARTIFACTS_DIR"
@@ -267,8 +224,6 @@ jobs:
           APP_ID="EditDotNet"
           LINUX_EXECUTABLE_NAME="edit.net"
           WINDOWS_EXECUTABLE_NAME="edit.net.exe"
-          MSIX_PUBLISHER_VALUE="${MSIX_PUBLISHER:-CN=Consolonia}"
-          MSIX_PUBLISHER_DISPLAY_NAME_VALUE="${MSIX_PUBLISHER_DISPLAY_NAME:-Consolonia}"
 
           for REQUIRED_EXECUTABLE in "$ARTIFACTS_DIR/publish/linux-x64/Edit.NET" "$ARTIFACTS_DIR/publish/osx-x64/Edit.NET" "$ARTIFACTS_DIR/publish/win-x64/Edit.NET.exe"; do
             if [ ! -f "$REQUIRED_EXECUTABLE" ]; then
@@ -280,42 +235,6 @@ jobs:
           cp -f "$ARTIFACTS_DIR/publish/linux-x64/Edit.NET" "$ARTIFACTS_DIR/publish/linux-x64/$LINUX_EXECUTABLE_NAME"
           cp -f "$ARTIFACTS_DIR/publish/osx-x64/Edit.NET" "$ARTIFACTS_DIR/publish/osx-x64/$LINUX_EXECUTABLE_NAME"
           cp -f "$ARTIFACTS_DIR/publish/win-x64/Edit.NET.exe" "$ARTIFACTS_DIR/publish/win-x64/$WINDOWS_EXECUTABLE_NAME"
-
-          # Generate AppxManifest.xml with AppExecutionAlias to ensure the app is in the PATH (for MSIX)
-          printf '<?xml version="1.0" encoding="utf-8"?>\n' > "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
-          printf '<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" \n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
-          printf '         xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" \n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
-          printf '         xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5" \n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
-          printf '         xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities" \n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
-          printf '         IgnorableNamespaces="uap uap5 rescap">\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
-          printf '  <Identity Name="%s" Publisher="%s" Version="%s" ProcessorArchitecture="x64" />\n' "$APP_ID" "$MSIX_PUBLISHER_VALUE" "$RELEASE_VERSION" >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
-          printf '  <Properties>\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
-          printf '    <DisplayName>%s</DisplayName>\n' "$APP_DISPLAY_NAME" >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
-          printf '    <PublisherDisplayName>%s</PublisherDisplayName>\n' "$MSIX_PUBLISHER_DISPLAY_NAME_VALUE" >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
-          printf '    <Logo>Assets\\StoreLogo.png</Logo>\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
-          printf '  </Properties>\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
-          printf '  <Dependencies>\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
-          printf '    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.14393.0" MaxVersionTested="10.0.19041.0" />\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
-          printf '  </Dependencies>\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
-          printf '  <Resources>\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
-          printf '    <Resource Language="en-US" />\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
-          printf '  </Resources>\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
-          printf '  <Applications>\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
-          printf '    <Application Id="EditDotNet" Executable="%s" EntryPoint="Windows.FullTrustApplication">\n' "$WINDOWS_EXECUTABLE_NAME" >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
-          printf '      <uap:VisualElements DisplayName="%s" Description="%s" BackgroundColor="#000000" Square150x150Logo="Assets\\Square150x150Logo.png" Square44x44Logo="Assets\\Square44x44Logo.png" />\n' "$APP_DISPLAY_NAME" "$APP_SUMMARY" >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
-          printf '      <Extensions>\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
-          printf '        <uap5:Extension Category="windows.appExecutionAlias">\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
-          printf '          <uap5:AppExecutionAlias>\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
-          printf '            <uap5:ExecutionAlias Alias="edit.net.exe" />\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
-          printf '          </uap5:AppExecutionAlias>\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
-          printf '        </uap5:Extension>\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
-          printf '      </Extensions>\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
-          printf '    </Application>\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
-          printf '  </Applications>\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
-          printf '  <Capabilities>\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
-          printf '    <rescap:Capability Name="runFullTrust" />\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
-          printf '  </Capabilities>\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
-          printf '</Package>\n' >> "$ARTIFACTS_DIR/publish/win-x64/AppxManifest.xml"
 
           COMMON_PACKAGE_ARGS=(
             --application-name "$APP_DISPLAY_NAME"
@@ -336,29 +255,6 @@ jobs:
           dotnetpackager rpm from-directory --directory "$ARTIFACTS_DIR/publish/linux-x64" --output "$ARTIFACTS_DIR/Edit.NET-${RELEASE_VERSION}-1.x86_64.rpm" "${COMMON_PACKAGE_ARGS[@]}"
           dotnetpackager dmg from-directory --directory "$ARTIFACTS_DIR/publish/osx-x64" --output "$ARTIFACTS_DIR/Edit.NET-${RELEASE_VERSION}.dmg" "${COMMON_PACKAGE_ARGS[@]}"
 
-          MSIX_ARGS=(
-            --directory "$ARTIFACTS_DIR/publish/win-x64"
-            --output "$ARTIFACTS_DIR/Edit.NET-${RELEASE_VERSION}.msix"
-            --application-name "$APP_DISPLAY_NAME"
-            --publisher "$MSIX_PUBLISHER_VALUE"
-            --publisher-display-name "$MSIX_PUBLISHER_DISPLAY_NAME_VALUE"
-            --version "$RELEASE_VERSION"
-            --appId "$APP_ID"
-            --executable-name "$WINDOWS_EXECUTABLE_NAME"
-            --description "$APP_COMMENT"
-            --icon "$ICON_PATH"
-            --arch x64
-          )
-
-          if [ -n "${MSIX_PFX_PATH:-}" ]; then
-            MSIX_ARGS+=(--pfx "$MSIX_PFX_PATH")
-            if [ -n "${MSIX_PFX_PASSWORD:-}" ]; then
-              MSIX_ARGS+=(--pfx-password "$MSIX_PFX_PASSWORD")
-            fi
-          fi
-
-          dotnetpackager msix from-directory "${MSIX_ARGS[@]}"
-
           EXE_ARGS=(
             --directory "$ARTIFACTS_DIR/publish/win-x64"
             --output "$ARTIFACTS_DIR/Edit.NET-${RELEASE_VERSION}-win-x64.exe"
@@ -376,13 +272,6 @@ jobs:
             --arch x64
           )
 
-          if [ -n "${EXE_PFX_PATH:-}" ]; then
-            EXE_ARGS+=(--pfx "$EXE_PFX_PATH")
-            if [ -n "${EXE_PFX_PASSWORD:-}" ]; then
-              EXE_ARGS+=(--pfx-password "$EXE_PFX_PASSWORD")
-            fi
-          fi
-
           dotnetpackager exe from-directory "${EXE_ARGS[@]}"
 
       - name: Upload packaged artifacts
@@ -394,7 +283,6 @@ jobs:
             artifacts/*.deb
             artifacts/*.rpm
             artifacts/*.dmg
-            artifacts/*.msix
             artifacts/*.exe
           if-no-files-found: error
 
@@ -411,86 +299,4 @@ jobs:
             artifacts/*.deb
             artifacts/*.rpm
             artifacts/*.dmg
-            artifacts/*.msix
             artifacts/*.exe
-
-#
-#  publish_ecosystems:
-#    needs: [evaluate_trigger, package_and_release]
-#    if: ${{ needs.package_and_release.result == 'success' && needs.evaluate_trigger.outputs.should_publish_ecosystems == 'true' }}
-#    runs-on: ubuntu-latest
-#    timeout-minutes: 20
-#    env:
-#      WINGET_PUBLISH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN || secrets.WINGET_TOKEN }}
-#    steps:
-#      - uses: actions/checkout@v4
-#
-#      - name: Publish to WinGet (optional)
-#        if: ${{ vars.WINGET_PACKAGE_IDENTIFIER != '' && env.WINGET_PUBLISH_TOKEN != '' }}
-#        uses: vedantmgoyal9/winget-releaser@v2
-#        with:
-#          identifier: ${{ vars.WINGET_PACKAGE_IDENTIFIER }}
-#          installers-regex: \.(msi|msix|exe)$
-#          release-tag: ${{ needs.package_and_release.outputs.release_tag }}
-#          token: ${{ env.WINGET_PUBLISH_TOKEN }}
-#
-#      - name: Publish to Chocolatey (optional)
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#          CHOCOLATEY_API_KEY: ${{ secrets.CHOCOLATEY_API_KEY }}
-#          CHOCOLATEY_PACKAGE_ID: ${{ vars.CHOCOLATEY_PACKAGE_ID }}
-#        run: |
-#          if [ -z "${CHOCOLATEY_API_KEY:-}" ]; then
-#            echo "CHOCOLATEY_API_KEY secret is not configured. Skipping Chocolatey publish."
-#            exit 0
-#          fi
-#
-#          if [ ! -f "./scripts/publish-chocolatey.sh" ]; then
-#            echo "scripts/publish-chocolatey.sh not found. Skipping Chocolatey publish."
-#            exit 0
-#          fi
-#
-#          chmod +x ./scripts/publish-chocolatey.sh
-#          ./scripts/publish-chocolatey.sh "${{ needs.package_and_release.outputs.release_tag }}"
-#
-#      - name: Publish to AUR (optional)
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#          AUR_SSH_PRIVATE_KEY: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
-#          AUR_PACKAGE_NAME: ${{ vars.AUR_PACKAGE_NAME }}
-#          AUR_BINARY_NAME: ${{ vars.AUR_BINARY_NAME }}
-#        run: |
-#          if [ -z "${AUR_SSH_PRIVATE_KEY:-}" ] || [ -z "${AUR_PACKAGE_NAME:-}" ]; then
-#            echo "AUR credentials or package name not configured. Skipping AUR publish."
-#            exit 0
-#          fi
-#
-#          if [ ! -f "./scripts/publish-aur.sh" ]; then
-#            echo "scripts/publish-aur.sh not found. Skipping AUR publish."
-#            exit 0
-#          fi
-#
-#          chmod +x ./scripts/publish-aur.sh
-#          ./scripts/publish-aur.sh "${{ needs.package_and_release.outputs.release_tag }}"
-#
-#      - name: Publish to Flathub (optional)
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#          FLATHUB_TOKEN: ${{ secrets.FLATHUB_TOKEN || secrets.PERSONAL_ACCESS_TOKEN }}
-#          FLATHUB_APP_ID: ${{ vars.FLATHUB_APP_ID }}
-#          FLATHUB_MANIFEST_REPO: ${{ vars.FLATHUB_MANIFEST_REPO }}
-#          FLATHUB_MANIFEST_PATH: ${{ vars.FLATHUB_MANIFEST_PATH }}
-#          FLATHUB_BRANCH: ${{ vars.FLATHUB_BRANCH }}
-#        run: |
-#          if [ -z "${FLATHUB_TOKEN:-}" ] || [ -z "${FLATHUB_APP_ID:-}" ]; then
-#            echo "Flathub token or app id not configured. Skipping Flathub publish."
-#            exit 0
-#          fi
-#
-#          if [ ! -f "./scripts/publish-flathub.sh" ]; then
-#            echo "scripts/publish-flathub.sh not found. Skipping Flathub publish."
-#            exit 0
-#          fi
-#
-#          chmod +x ./scripts/publish-flathub.sh
-#          ./scripts/publish-flathub.sh "${{ needs.package_and_release.outputs.release_tag }}"
