@@ -264,10 +264,10 @@ jobs:
           APP_COMMENT="Run edit.net to start the editor"
           APP_HOMEPAGE="https://github.com/Consolonia/Edit.NET"
           APP_VENDOR="Consolonia"
-          APP_ID="com.consolonia.editnet"
+          APP_ID="EditDotNet"
           LINUX_EXECUTABLE_NAME="edit.net"
-          WINDOWS_EXECUTABLE_NAME="edit.net.exe"
-          MSIX_PUBLISHER_VALUE="${MSIX_PUBLISHER:-CN=DeveloperPackage}"
+          WINDOWS_EXECUTABLE_NAME="Edit.NET.exe"
+          MSIX_PUBLISHER_VALUE="${MSIX_PUBLISHER:-CN=Consolonia}"
           MSIX_PUBLISHER_DISPLAY_NAME_VALUE="${MSIX_PUBLISHER_DISPLAY_NAME:-Consolonia}"
 
           for REQUIRED_EXECUTABLE in "$ARTIFACTS_DIR/publish/linux-x64/Edit.NET" "$ARTIFACTS_DIR/publish/osx-x64/Edit.NET" "$ARTIFACTS_DIR/publish/win-x64/Edit.NET.exe"; do
@@ -311,6 +311,7 @@ jobs:
             --executable-name "$WINDOWS_EXECUTABLE_NAME"
             --description "$APP_COMMENT"
             --icon "$ICON_PATH"
+            --background-color "#000000"
             --arch x64
           )
 
@@ -336,6 +337,7 @@ jobs:
             --executable-name "$WINDOWS_EXECUTABLE_NAME"
             --icon "$ICON_PATH"
             --setup-logo "$ICON_PATH"
+            --background-color "#000000"
             --arch x64
           )
 
