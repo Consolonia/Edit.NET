@@ -17,6 +17,16 @@ Edit.NET is a powerful terminal-based text editor built with Avalonia and Consol
 ### macOS
 - **DMG:** Download and open the `.dmg`, then drag the application to your Applications folder.
 
+### .NET Tool
+If you have the .NET SDK installed, you can install Edit.NET as a global tool:
+```bash
+dotnet tool install -g EditDotNet
+```
+To update the tool to the latest version:
+```bash
+dotnet tool update -g EditDotNet
+```
+
 ## Usage
 Once installed, run the editor by typing:
 ```bash
