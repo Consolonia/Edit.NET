@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using EditNET.Helpers;
@@ -11,7 +12,7 @@ namespace EditNET
 
         static Program()
         {
-            System.Runtime.ExceptionServices.ExceptionHandling.SetUnhandledExceptionHandler(exception =>
+            ExceptionHandling.SetUnhandledExceptionHandler(exception =>
             {
                 if (Thread.CurrentThread == _mainThread)
                     return false;
