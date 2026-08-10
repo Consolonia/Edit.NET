@@ -130,7 +130,7 @@
                               IsEnabled="{Binding ElementName=Editor, Path=CanCopy}" />
                     <MenuItem Header="Cut"
                               InputGesture="ctrl+X"
-                              Command="{Binding CutMouseCommand}"
+                              Command="{Binding ElementName=Editor, Path=Cut}"
                               CommandParameter="{Binding #Editor.TextArea}" />
                     <MenuItem Header="Paste"
                               InputGesture="ctrl+V"
