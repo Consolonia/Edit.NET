@@ -199,7 +199,7 @@ namespace EditNET.Views
             int column = Editor.TextArea.Caret.Column;
             PositionText.Text = $"Ln {line}, Col {column}";
             // Length
-            int length = Editor.Document?.TextLength ?? (Editor.Text?.Length ?? 0);
+            int length = Editor.Document?.TextLength ?? Editor.Text?.Length ?? 0;
             LengthText.Text = $"Len {length}";
         }
 
