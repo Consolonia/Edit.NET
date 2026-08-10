@@ -1,5 +1,5 @@
-using System;
 using System.Diagnostics;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using EditNET.Helpers;
@@ -12,26 +12,27 @@ namespace EditNET
 
         static Program()
         {
-            AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
+            ExceptionHandling.SetUnhandledExceptionHandler(exception =>
             {
                 if (Thread.CurrentThread == _mainThread)
-                    return;
+                    return false;
 
-                if (args.ExceptionObject is CrashAppException)
+                if (exception is CrashAppException)
                 {
                     Debug.WriteLine("Application is going to crash");
                     if (Debugger.IsAttached)
                         Debugger.Break();
-                    return;
+                    return false;
                 }
 
-                _ = App.ShowApplicationError((Exception)args.ExceptionObject);
-
+                _ = App.ShowApplicationError(exception);
 #if HANDLE_CRASH
                 // preventing process from crash in RELEASE
-                Thread.CurrentThread.Join();
+                return true;
+#else
+                return false;
 #endif
-            };
+            });
 
             TaskScheduler.UnobservedTaskException += (sender, args) =>
             {
