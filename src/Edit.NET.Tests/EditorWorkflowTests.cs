@@ -78,9 +78,9 @@ namespace EditNET.Tests
 
             // Give the (delayed) focus-restoration triggered by the dialog's dismissal time to
             // complete before the next test types into the editor again.
-            await Task.Delay(600);  // todo: introduce UITest.WaitAnimation();
+            await Task.Delay(600); // todo: introduce UITest.WaitAnimation();
         }
-        
+
         private static async Task ClearDocumentAsync()
         {
             await UITest.KeyInput(Key.A, RawInputModifiers.Control); // select all
