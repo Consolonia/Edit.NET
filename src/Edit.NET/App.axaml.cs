@@ -82,6 +82,9 @@ namespace EditNET
             {
                 if (desktopLifetime.Args is { Length: > 0 })
                     await ViewModel.EditorViewModel.OpenFile(desktopLifetime.Args[0]);
+
+                if (PipingHack.PipedInputContent != null)
+                    ViewModel.EditorViewModel.AppendContent(PipingHack.PipedInputContent);
             }, DispatcherPriority.ContextIdle);
         }
 

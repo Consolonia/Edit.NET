@@ -144,6 +144,11 @@ namespace EditNET.ViewModels
                 Directory.SetCurrentDirectory(directoryName);
         }
 
+        public void AppendContent(string content)
+        {
+            Document.Insert(Document.TextLength, content);
+        }
+
         private async Task SaveFileInternalAsync()
         {
             Debug.Assert(Path.IsPathFullyQualified(FilePath!));
