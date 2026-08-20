@@ -14,7 +14,7 @@ namespace EditNET
     ///     Encapsulates the workaround required to keep Edit.NET usable when its standard input is
     ///     redirected/piped (e.g. "env | Edit.NET")
     /// </summary>
-    internal static class PipingHack
+    internal static class PipingWorkaround
     {
         public static string? PipedInputContent { get; private set; }
         
@@ -28,7 +28,7 @@ namespace EditNET
             string pipedContent = Console.In.ReadToEnd();
             PipedInputContent = pipedContent;
 
-            if (AvaloniaLocator.Current.GetRequiredService<IConsole>() is not CursesConsole)
+            if (Environment.OSVersion.Platform is not (PlatformID.Unix or PlatformID.MacOSX))
                 return;
             
             const int stdinFileDescriptor = 0;
