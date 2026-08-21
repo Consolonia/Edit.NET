@@ -56,17 +56,18 @@ namespace EditNET
         {
             // Claude: DefaultDllImportSearchPaths restricts native library probing to safe/system directories,
             // avoiding a DLL search-order hijacking risk (fixes code-analysis warning CA5392).
-            [DefaultDllImportSearchPaths(DllImportSearchPath.System32 | DllImportSearchPath.SafeDirectories),
-#pragma warning disable CA2101 // Claude:
-             // Open must NOT use CharSet.Unicode: that marshals "pathname" as a UTF-16 string, but libc's
-             // open() expects a plain null-terminated byte string (char*). With CharSet.Unicode, the native
-             // call only sees the first byte of "/dev/tty" followed by a 0x00 byte (the low byte of the
-             // UTF-16 encoding of the second character), i.e. effectively just "/". open("/", O_RDONLY)
-             // succeeds (it's a valid directory), so no error is ever surfaced - but the resulting file
-             // descriptor is a directory, not a terminal, so reads on it (e.g. via get_wch) never return
-             // usable input and the app appears to hang silently. Using the default/ANSI marshaling (UTF-8
-             // on Unix .NET) passes the correct, fully null-terminated "/dev/tty" string.
-             DllImport("libc", EntryPoint = "open", SetLastError = true)]
+            [DefaultDllImportSearchPaths(DllImportSearchPath.System32 | DllImportSearchPath.SafeDirectories)]
+#pragma warning disable CA2101
+            // Claude:
+            // Open must NOT use CharSet.Unicode: that marshals "pathname" as a UTF-16 string, but libc's
+            // open() expects a plain null-terminated byte string (char*). With CharSet.Unicode, the native
+            // call only sees the first byte of "/dev/tty" followed by a 0x00 byte (the low byte of the
+            // UTF-16 encoding of the second character), i.e. effectively just "/". open("/", O_RDONLY)
+            // succeeds (it's a valid directory), so no error is ever surfaced - but the resulting file
+            // descriptor is a directory, not a terminal, so reads on it (e.g. via get_wch) never return
+            // usable input and the app appears to hang silently. Using the default/ANSI marshaling (UTF-8
+            // on Unix .NET) passes the correct, fully null-terminated "/dev/tty" string.
+            [DllImport("libc", EntryPoint = "open", SetLastError = true)]
 #pragma warning restore CA2101
             public static extern int Open(string pathname, int flags);
 
