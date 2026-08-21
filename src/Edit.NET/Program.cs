@@ -15,7 +15,7 @@ namespace EditNET
         private static void Main(string[] args)
         {
             //Thread.Sleep(20000);
-            
+
             PipingWorkaround.ReadPipedInputAndReattachStdInFromTerminalIfRedirected();
 
             _mainThread = Thread.CurrentThread;

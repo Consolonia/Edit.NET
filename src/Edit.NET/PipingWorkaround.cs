@@ -4,9 +4,6 @@ using System;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.InteropServices;
-using Avalonia;
-using Consolonia.Core.Infrastructure;
-using Consolonia.PlatformSupport;
 
 namespace EditNET
 {
@@ -17,7 +14,7 @@ namespace EditNET
     internal static class PipingWorkaround
     {
         public static string? PipedInputContent { get; private set; }
-        
+
         public static void ReadPipedInputAndReattachStdInFromTerminalIfRedirected()
         {
             PipedInputContent = null;
@@ -31,7 +28,7 @@ namespace EditNET
             if (Environment.OSVersion.Platform is not (PlatformID.Unix or PlatformID.MacOSX))
                 // reproducing same condition as PlatformSupportExtensions of Consolonia
                 return;
-            
+
             const int stdinFileDescriptor = 0;
             const int openReadOnly = 0;
 
