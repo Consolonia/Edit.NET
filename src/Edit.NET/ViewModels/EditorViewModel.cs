@@ -76,6 +76,11 @@ namespace EditNET.ViewModels
                 Directory.SetCurrentDirectory(Path.GetDirectoryName(FilePath!)!);
             }
         }
+        
+        public void AppendContent(string content)
+        {
+            Document.Insert(Document.TextLength, content);
+        }
 
         public async Task<bool> CheckSaved()
         {
