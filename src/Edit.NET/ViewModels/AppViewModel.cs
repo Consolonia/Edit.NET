@@ -6,7 +6,6 @@ using System.Text.Json;
 using Avalonia.Controls.Notifications;
 using CommunityToolkit.Mvvm.ComponentModel;
 using EditNET.DataModels;
-using EditNET.Views;
 using ReactiveUI;
 using Notification = Avalonia.Controls.Notifications.Notification;
 
