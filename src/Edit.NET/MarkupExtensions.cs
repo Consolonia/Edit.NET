@@ -16,6 +16,6 @@ namespace EditNET
                 string.IsNullOrEmpty(filePath) ? "Untitled" : Path.GetFileName(filePath));
 
         public static readonly IValueConverter DocumentsObservableCollectionToInfoConverter =
-            new FuncValueConverter<ICollection<EditorViewModel>, string>(models => $"{models.Count} document(s)");
+            new FuncValueConverter<ICollection<EditorViewModel>, string>(models => $"{models!.Count} document(s)");
     }
 }

@@ -12,20 +12,16 @@ using ReactiveUI;
 
 namespace EditNET.ViewModels
 {
-    /*           
-       8) check piping still working
-     * 
-     */
-    
     public partial class MdiViewModel : ObservableObject
     {
         public Interaction<Unit, string?> OpenFileInteraction { get; } = new();
         public Interaction<Unit, Unit> ShutdownInteraction { get; } = new();
-        
-        public ObservableCollection<EditorViewModel> Documents { get; } = [];
-        [ObservableProperty] private EditorViewModel _activeDocument;
-        [ObservableProperty] private Settings _settings;
 
+        public ObservableCollection<EditorViewModel> Documents { get; } = [];
+        [ObservableProperty] private EditorViewModel _activeDocument = null!;
+        [ObservableProperty] private Settings _settings = null!;
+
+        [Obsolete("For designer only")]
         public MdiViewModel()
         {
             Documents.CollectionChanged += async (_, _) =>
@@ -39,15 +35,17 @@ namespace EditNET.ViewModels
         }
 
 
+#pragma warning disable CS0618 // Type or member is obsolete
         public MdiViewModel(Settings settings) : this()
+#pragma warning restore CS0618 // Type or member is obsolete
         {
             _settings = settings;
         }
-        
+
         public async Task NewCommand()
         {
             Documents.Add(new EditorViewModel(Settings));
-            
+
             /*
             if (!await ActiveDocument.CheckSaved())
             {
@@ -77,8 +75,6 @@ namespace EditNET.ViewModels
             }
 
             await OpenFile(Path.GetFullPath(filePath));
-
-            
         }
 
         public async Task SaveCommand()
@@ -88,7 +84,7 @@ namespace EditNET.ViewModels
 
         public async Task SaveAsCommand()
         {
-             await ActiveDocument.SaveAsCommand();
+            await ActiveDocument.SaveAsCommand();
         }
 
         public async Task ExitCommand()
@@ -101,10 +97,10 @@ namespace EditNET.ViewModels
                     return;
                 }
             }
-            
+
             await ShutdownInteraction.Handle(Unit.Default);
         }
-        
+
         public async Task OpenFile(string path)
         {
             if (!Path.IsPathFullyQualified(path))
@@ -113,18 +109,19 @@ namespace EditNET.ViewModels
             {
                 FilePath = path
             };
-            
+
             Documents.Add(editorViewModel);
             if (File.Exists(editorViewModel.FilePath))
                 await editorViewModel.HandleFileExceptions(async () =>
                 {
-                    editorViewModel.Document = new TextDocument(new StringTextSource(await File.ReadAllTextAsync(path)));
+                    editorViewModel.Document =
+                        new TextDocument(new StringTextSource(await File.ReadAllTextAsync(path)));
                 });
 
             string? directoryName = Path.GetDirectoryName(path);
             if (!string.IsNullOrEmpty(directoryName)) // path can be in the current directory
                 Directory.SetCurrentDirectory(directoryName);
-            
+
             await editorViewModel.FocusEditorInteraction.Handle(Unit.Default);
         }
     }

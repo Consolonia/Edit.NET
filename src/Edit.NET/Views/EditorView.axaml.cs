@@ -233,10 +233,10 @@ namespace EditNET.Views
         private async void ManagedWindow_OnClosing(object? sender, WindowClosingEventArgs e)
         {
             //todo: it looks like it must be part of viewmodel
-            if (MdiView.ViewModel.Documents.Contains(ViewModel))
+            if (MdiView.ViewModel.Documents.Contains(ViewModel!))
             {// user wants to close
                 e.Cancel = true;
-                if (!await ViewModel.CheckSaved())
+                if (!await ViewModel!.CheckSaved())
                 {
                     await FocusInternal();
                     return;

@@ -150,7 +150,7 @@ namespace EditNET.Views
             };
             menuItem.Click += (sender, args) =>
             {
-                ((EditorViewModel)((MenuItem)sender).DataContext).ActivateInteraction.Handle(Unit.Default).Wait();
+                ((EditorViewModel)((MenuItem)sender!).DataContext!).ActivateInteraction.Handle(Unit.Default).Wait();
                 args.Handled = true;
             };
 
@@ -161,14 +161,14 @@ namespace EditNET.Views
 
         internal MdiViewModel ViewModel => (MdiViewModel)DataContext!;
 
-        private EditorView? ActiveWindow => (EditorView)WindowHost.ActiveWindow;
+        private EditorView? ActiveWindow => (EditorView?)WindowHost!.ActiveWindow;
 
-        private AvaloniaEdit.TextEditor? ActiveEditor => ActiveWindow.Editor;
+        private AvaloniaEdit.TextEditor? ActiveEditor => ActiveWindow!.Editor;
 
         private async void MenuItem_OnClick(object? sender, RoutedEventArgs e)
         {
             await new AboutWindow().ShowModalAsync(this);
-            await ActiveWindow.FocusInternal();
+            await ActiveWindow!.FocusInternal();
         }
 
         private async void OnShowSettings(object? sender, RoutedEventArgs e)
@@ -177,12 +177,12 @@ namespace EditNET.Views
             await dlg.ShowModalAsync(this);
             Settings? newSettings = dlg.Result;
             if (newSettings != null) ViewModel.Settings = newSettings;
-            await ActiveWindow.FocusInternal();
+            await ActiveWindow!.FocusInternal();
         }
 
         private void EditMenu_OnSubmenuOpened(object sender, RoutedEventArgs e)
         {
-            AvaloniaEdit.TextEditor editor = ActiveEditor;
+            AvaloniaEdit.TextEditor editor = ActiveEditor!;
             UndoMenuItem.IsEnabled = editor.CanUndo;
             RedoMenuItem.IsEnabled = editor.CanRedo;
             CutMenuItem.IsEnabled = editor is { SelectionLength: > 0 };
@@ -192,32 +192,32 @@ namespace EditNET.Views
 
         private void UndoMenuItem_OnClick(object? sender, RoutedEventArgs e)
         {
-            ActiveEditor.Undo();
+            ActiveEditor!.Undo();
         }
 
         private void RedoMenuItem_OnClick(object? sender, RoutedEventArgs e)
         {
-            ActiveEditor.Redo();
+            ActiveEditor!.Redo();
         }
 
         private void CutMenuItem_OnClick(object? sender, RoutedEventArgs e)
         {
-            ActiveEditor.Cut();
+            ActiveEditor!.Cut();
         }
 
         private void CopyMenuItem_OnClick(object? sender, RoutedEventArgs e)
         {
-            ActiveEditor.Copy();
+            ActiveEditor!.Copy();
         }
 
         private void PasteMenuItem_OnClick(object? sender, RoutedEventArgs e)
         {
-            ActiveEditor.Paste();
+            ActiveEditor!.Paste();
         }
 
         private void SelectAllMenuItem_OnClick(object? sender, RoutedEventArgs e)
         {
-            ActiveEditor.SelectAll();
+            ActiveEditor!.SelectAll();
         }
 
         private async Task OpenFileHandler(IInteractionContext<Unit, string?> interactionContext)
