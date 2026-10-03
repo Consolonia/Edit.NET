@@ -38,10 +38,9 @@ namespace EditNET.ViewModels
 
         public Interaction<MessageBoxModel, MessageBoxResult> MessageBoxInteraction { get; } = new();
         public Interaction<Unit, Unit> FocusEditorInteraction { get; } = new();
-        public Interaction<Unit, string?> OpenFileInteraction { get; } = new();
         public Interaction<Unit, string?> SaveFileInteraction { get; } = new();
-        public Interaction<Unit, Unit> ShutdownInteraction { get; } = new();
         public Interaction<Unit, Unit> UpdateStatusInteraction { get; } = new();
+        public Interaction<Unit, Unit> ActivateInteraction { get; } = new();
 
         private async void OnDocumentUpdatedNoInitial(TextDocument newDocument)
         {
@@ -62,89 +61,7 @@ namespace EditNET.ViewModels
             UpdateStatusInteraction.Handle(Unit.Default).Wait();
         }
 
-        public async Task NewCommand()
-        {
-            if (!await CheckSaved())
-            {
-                await FocusEditorInteraction.Handle(Unit.Default);
-                return;
-            }
-
-            Document = new TextDocument();
-            FilePath = null;
-
-            await FocusEditorInteraction.Handle(Unit.Default);
-        }
-
-        public async Task OpenCommand()
-        {
-            if (!await CheckSaved())
-            {
-                await FocusEditorInteraction.Handle(Unit.Default);
-                return;
-            }
-
-            string? filePath = await OpenFileInteraction.Handle(Unit.Default);
-            if (filePath == null)
-            {
-                await FocusEditorInteraction.Handle(Unit.Default);
-                return;
-            }
-
-            await OpenFile(Path.GetFullPath(filePath));
-
-            await FocusEditorInteraction.Handle(Unit.Default);
-        }
-
-        public async Task SaveCommand()
-        {
-            if (FilePath == null)
-                await SaveAsCommand();
-            else await SaveFileInternalAsync();
-
-            await FocusEditorInteraction.Handle(Unit.Default);
-        }
-
-        public async Task SaveAsCommand()
-        {
-            string? filePath = await SaveFileInteraction.Handle(Unit.Default);
-            if (filePath == null)
-                return;
-
-            FilePath = Path.GetFullPath(filePath, Environment.CurrentDirectory);
-            await SaveFileInternalAsync();
-
-            await FocusEditorInteraction.Handle(Unit.Default);
-        }
-
-        public async Task ExitCommand()
-        {
-            if (!await CheckSaved())
-            {
-                await FocusEditorInteraction.Handle(Unit.Default);
-                return;
-            }
-
-            await ShutdownInteraction.Handle(Unit.Default);
-        }
-
-        public async Task OpenFile(string path)
-        {
-            if (!Path.IsPathFullyQualified(path))
-                path = Path.GetFullPath(path, Environment.CurrentDirectory);
-            FilePath = path;
-            if (File.Exists(FilePath))
-                await HandleFileExceptions(async () =>
-                {
-                    Document = new TextDocument(new StringTextSource(await File.ReadAllTextAsync(path)));
-                });
-
-            string? directoryName = Path.GetDirectoryName(path);
-            if (!string.IsNullOrEmpty(directoryName)) // path can be in the current directory
-                Directory.SetCurrentDirectory(directoryName);
-        }
-
-        private async Task SaveFileInternalAsync()
+        internal async Task SaveFileInternalAsync()
         {
             Debug.Assert(Path.IsPathFullyQualified(FilePath!));
             bool succeeded = false;
@@ -160,25 +77,52 @@ namespace EditNET.ViewModels
             }
         }
 
-        private async Task<bool> CheckSaved()
+        public async Task<bool> CheckSaved()
         {
             if (!Modified)
                 return true;
 
-            MessageBoxResult shouldSave = await MessageBoxInteraction.Handle(new MessageBoxModel("Unsaved Changes",
+            ActivateInteraction.Handle(Unit.Default).Wait();
+            
+            MessageBoxResult messageBoxResult = await MessageBoxInteraction.Handle(new MessageBoxModel("Unsaved Changes",
                 "You have unsaved changes. Do you want to save them?", MessageBoxButtons.YesNo));
 
-            if (shouldSave == MessageBoxResult.Cancel)
-                return false;
+            switch (messageBoxResult)
+            {
+                case MessageBoxResult.Cancel:
+                    return false;
+                case MessageBoxResult.No:
+                    return true; 
+                case MessageBoxResult.Yes:
+                    await SaveCommand();
+                    return !Modified;
+                case MessageBoxResult.Ok:
+                default: throw new NotSupportedException();
+            }
+        }
+        
+        public async Task SaveCommand()
+        {
+            if (FilePath == null)
+                await SaveAsCommand();
+            else await SaveFileInternalAsync();
 
-            if (shouldSave == MessageBoxResult.No)
-                return true;
+            await FocusEditorInteraction.Handle(Unit.Default);
+        }
+        
+        public async Task SaveAsCommand()
+        {
+            string? filePath = await SaveFileInteraction.Handle(Unit.Default);
+            if (filePath == null)
+                return;
 
-            await SaveCommand();
-            return !Modified;
+            FilePath = Path.GetFullPath(filePath, Environment.CurrentDirectory);
+            await SaveFileInternalAsync();
+
+            await FocusEditorInteraction.Handle(Unit.Default);
         }
 
-        private async Task HandleFileExceptions(Func<Task> action)
+        internal async Task HandleFileExceptions(Func<Task> action)
         {
             try
             {

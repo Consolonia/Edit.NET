@@ -1,0 +1,118 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:viewModels="clr-namespace:EditNET.ViewModels"
+             xmlns:editNet="clr-namespace:EditNET"
+             xmlns:windowManager="clr-namespace:Iciclecreek.Avalonia.WindowManager;assembly=Iciclecreek.Avalonia.WindowManager"
+             x:Class="EditNET.Views.MdiView"
+             Background="#2D2D2D"
+             x:DataType="viewModels:MdiViewModel"
+             d:DataContext="{viewModels:MdiViewModel}">
+    <UserControl.Styles>
+        <Style Selector="MenuItem[IsChecked=true]">
+            <Setter Property="Icon"
+                    Value="v" />
+        </Style>
+    </UserControl.Styles>
+
+    <!-- Explicit key bindings so shortcuts work in the console/ManagedWindow host -->
+    <UserControl.KeyBindings>
+        <KeyBinding Gesture="Ctrl+N"
+                    Command="{Binding NewCommand}" />
+        <KeyBinding Gesture="Ctrl+O"
+                    Command="{Binding OpenCommand}" />
+        <KeyBinding Gesture="Ctrl+S"
+                    Command="{Binding SaveCommand}" />
+        <KeyBinding Gesture="Ctrl+Shift+S"
+                    Command="{Binding SaveAsCommand}" />
+    </UserControl.KeyBindings>
+
+    <DockPanel LastChildFill="True">
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="_New"
+                          Command="{Binding NewCommand}"
+                          InputGesture="Ctrl+N" />
+                <MenuItem Header="_Open..."
+                          Command="{Binding OpenCommand}"
+                          InputGesture="Ctrl+O" />
+                <MenuItem Header="_Save"
+                          Command="{Binding SaveCommand}"
+                          InputGesture="Ctrl+S" />
+                <MenuItem Header="Save _As..."
+                          Command="{Binding SaveAsCommand}"
+                          InputGesture="Ctrl+Shift+S" />
+                <Separator />
+                <MenuItem Header="E_xit"
+                          Command="{Binding ExitCommand}" />
+            </MenuItem>
+            <MenuItem Header="_Edit"
+                      SubmenuOpened="EditMenu_OnSubmenuOpened">
+                <MenuItem x:Name="UndoMenuItem"
+                          Header="_Undo"
+                          Click="UndoMenuItem_OnClick"
+                          InputGesture="CTRL+Z" />
+                <MenuItem x:Name="RedoMenuItem"
+                          Header="_Redo"
+                          Click="RedoMenuItem_OnClick"
+                          InputGesture="Ctrl+Y" />
+                <Separator />
+                <MenuItem x:Name="CutMenuItem"
+                          Header="Cu_t"
+                          Click="CutMenuItem_OnClick"
+                          InputGesture="Ctrl+X" />
+                <MenuItem x:Name="CopyMenuItem"
+                          Header="_Copy"
+                          Click="CopyMenuItem_OnClick"
+                          InputGesture="Ctrl+C" />
+                <MenuItem x:Name="PasteMenuItem"
+                          Header="_Paste"
+                          Click="PasteMenuItem_OnClick"
+                          InputGesture="Ctrl+V" />
+                <Separator />
+                <MenuItem Header="Select _All"
+                          Click="SelectAllMenuItem_OnClick"
+                          InputGesture="Ctrl+A" />
+                <Separator />
+                <MenuItem Header="_Settings..."
+                          Click="OnShowSettings" />
+            </MenuItem>
+            <MenuItem Header="_View"
+                      x:Name="ViewMenuItem">
+                <MenuItem Header="_Maximize" Click="MaximizeMenuItem_OnClick"/>
+                <MenuItem Header="_Restore" Click="RestoreMenuItem_OnClick"/>
+                <MenuItem Header="_Close" Click="CloseMenuItem_OnClick"/>
+                <Separator />
+            </MenuItem>
+            <MenuItem Header="_Help">
+                <MenuItem Header="_About"
+                          Click="MenuItem_OnClick" />
+            </MenuItem>
+        </Menu>
+        <Border x:Name="BottomPanel"
+                Background="{DynamicResource ThemeAlternativeBackgroundBrush}"
+                DockPanel.Dock="Bottom">
+            <UniformGrid Columns="4"
+                         ColumnSpacing="1"
+                         Margin="1,0">
+                <UniformGrid.Styles>
+                    <Style Selector="TextBlock">
+                        <Setter Property="HorizontalAlignment"
+                                Value="Center" />
+                    </Style>
+                </UniformGrid.Styles>
+                <TextBlock Name="DocsText"
+                           Text="{Binding Documents, Converter={x:Static editNet:EditConverters.DocumentsObservableCollectionToInfoConverter}}"
+                           HorizontalAlignment="Left" />
+                <TextBlock Name="PositionText"
+                           Text="Ln 1, Col 1" />
+                <TextBlock Name="LengthText"
+                           Text="Len 0" />
+                <TextBlock Text="{Binding ActiveDocument.Modified, Converter={x:Static editNet:EditConverters.ModifiedConverter}}"
+                           HorizontalAlignment="Right" />
+            </UniformGrid>
+        </Border>
+        <windowManager:WindowsPanel x:Name="WindowHost" />
+        <!--Activated="WindowHost_OnActivated"-->
+    </DockPanel>
+</UserControl>

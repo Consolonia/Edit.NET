@@ -50,17 +50,20 @@ namespace EditNET
                 return;
             }
 
-            MainWindow.Content = new EditorView { DataContext = ViewModel.EditorViewModel };
+            MainWindow.Content = new MdiView
+            {
+                DataContext = ViewModel.MdiViewModel
+            };
         }
 
         public override void OnFrameworkInitializationCompleted()
         {
             var desktopLifetime = (IClassicDesktopStyleApplicationLifetime)ApplicationLifetime!;
-            bool themeLoaded = LoadUiTheme(ViewModel.EditorViewModel.Settings.ConsoloniaTheme);
+            bool themeLoaded = LoadUiTheme(ViewModel.MdiViewModel.Settings.ConsoloniaTheme);
             desktopLifetime.MainWindow = new MainWindow
             {
                 DataContext = ViewModel,
-                RequestedThemeVariant = ViewModel.EditorViewModel.Settings.LightVariant
+                RequestedThemeVariant = ViewModel.MdiViewModel.Settings.LightVariant
                     ? ThemeVariant.Light
                     : ThemeVariant.Dark
             };
@@ -81,7 +84,8 @@ namespace EditNET
             Dispatcher.UIThread.Post(async () =>
             {
                 if (desktopLifetime.Args is { Length: > 0 })
-                    await ViewModel.EditorViewModel.OpenFile(desktopLifetime.Args[0]);
+                    await ViewModel.MdiViewModel.OpenFile(desktopLifetime.Args[0]);
+                else await ViewModel.MdiViewModel.NewCommand();
             }, DispatcherPriority.ContextIdle);
         }
 
