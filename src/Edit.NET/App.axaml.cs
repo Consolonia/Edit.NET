@@ -50,10 +50,7 @@ namespace EditNET
                 return;
             }
 
-            MainWindow.Content = new MdiView
-            {
-                DataContext = ViewModel.MdiViewModel
-            };
+            MainWindow.Content = new MdiView { DataContext = ViewModel.MdiViewModel };
         }
 
         public override void OnFrameworkInitializationCompleted()

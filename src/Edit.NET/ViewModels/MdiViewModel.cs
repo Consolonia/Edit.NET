@@ -45,28 +45,10 @@ namespace EditNET.ViewModels
         public async Task NewCommand()
         {
             Documents.Add(new EditorViewModel(Settings));
-
-            /*
-            if (!await ActiveDocument.CheckSaved())
-            {
-                await ActiveDocument.FocusEditorInteraction.Handle(Unit.Default);
-                return;
-            }
-
-            Document = new TextDocument();
-            FilePath = null;
-
-            await ActiveDocument.FocusEditorInteraction.Handle(Unit.Default);*/
         }
 
         public async Task OpenCommand()
         {
-            /*if (!await CheckSaved())
-            {
-                await FocusEditorInteraction.Handle(Unit.Default);
-                return;
-            }*/
-
             string? filePath = await OpenFileInteraction.Handle(Unit.Default);
             if (filePath == null)
             {

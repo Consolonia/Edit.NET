@@ -60,8 +60,34 @@ namespace EditNET.ViewModels
             Modified = true;
             UpdateStatusInteraction.Handle(Unit.Default).Wait();
         }
+        
+        public async Task SaveCommand()
+        {
+            if (FilePath == null)
+                await SaveAsCommand();
+            else await SaveFileInternalAsync();
 
-        internal async Task SaveFileInternalAsync()
+            await FocusEditorInteraction.Handle(Unit.Default);
+        }
+        
+        public async Task SaveAsCommand()
+        {
+            string? filePath = await SaveFileInteraction.Handle(Unit.Default);
+            if (filePath == null)
+                return;
+
+            FilePath = Path.GetFullPath(filePath, Environment.CurrentDirectory);
+            await SaveFileInternalAsync();
+
+            await FocusEditorInteraction.Handle(Unit.Default);
+        }
+        
+        public void AppendContent(string content)
+        {
+            Document.Insert(Document.TextLength, content);
+        }
+
+        private async Task SaveFileInternalAsync()
         {
             Debug.Assert(Path.IsPathFullyQualified(FilePath!));
             bool succeeded = false;
@@ -75,11 +101,6 @@ namespace EditNET.ViewModels
                 Modified = false;
                 Directory.SetCurrentDirectory(Path.GetDirectoryName(FilePath!)!);
             }
-        }
-        
-        public void AppendContent(string content)
-        {
-            Document.Insert(Document.TextLength, content);
         }
 
         public async Task<bool> CheckSaved()
@@ -104,27 +125,6 @@ namespace EditNET.ViewModels
                 case MessageBoxResult.Ok:
                 default: throw new NotSupportedException();
             }
-        }
-        
-        public async Task SaveCommand()
-        {
-            if (FilePath == null)
-                await SaveAsCommand();
-            else await SaveFileInternalAsync();
-
-            await FocusEditorInteraction.Handle(Unit.Default);
-        }
-        
-        public async Task SaveAsCommand()
-        {
-            string? filePath = await SaveFileInteraction.Handle(Unit.Default);
-            if (filePath == null)
-                return;
-
-            FilePath = Path.GetFullPath(filePath, Environment.CurrentDirectory);
-            await SaveFileInternalAsync();
-
-            await FocusEditorInteraction.Handle(Unit.Default);
         }
 
         internal async Task HandleFileExceptions(Func<Task> action)

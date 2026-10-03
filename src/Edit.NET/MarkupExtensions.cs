@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
 using Avalonia.Data.Converters;
-using DynamicData.Binding;
 using EditNET.ViewModels;
 
 namespace EditNET

@@ -11,11 +11,8 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Data;
 using Avalonia.Interactivity;
-using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Platform.Storage;
-using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Consolonia.Themes.Infrastructure;
 using DynamicData.Binding;
@@ -89,8 +86,6 @@ namespace EditNET.Views
                     default:
                         throw new NotSupportedException();
                 }
-
-                //BindingOperations.GetBindingExpressionBase(subMenu, IsEnabledProperty)?.UpdateTarget();
             }
         }
 

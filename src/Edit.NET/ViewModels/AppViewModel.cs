@@ -49,7 +49,6 @@ namespace EditNET.ViewModels
         public MdiViewModel MdiViewModel { get; }
         public Interaction<(ConsoloniaTheme, bool), Unit> SetThemeInteraction { get; } = new();
         public Interaction<Notification, Unit> ShowNotificationInteraction { get; } = new();
-        public Interaction<Unit, Unit> SetStorageProviderInteraction { get; } = new();
         public Exception? InitialLoadSettingsException { get; }
 
         private void OnSettingsUpdated(Settings settings)
