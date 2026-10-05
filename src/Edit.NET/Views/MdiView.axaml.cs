@@ -168,7 +168,7 @@ namespace EditNET.Views
 
         private async void OnShowSettings(object? sender, RoutedEventArgs e)
         {
-            var dlg = new EditSettingsDialog(ViewModel!.Settings.SerializedCopy());
+            var dlg = new EditSettingsDialog(ViewModel.Settings.SerializedCopy());
             await dlg.ShowModalAsync(this);
             Settings? newSettings = dlg.Result;
             if (newSettings != null) ViewModel.Settings = newSettings;
