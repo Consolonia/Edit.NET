@@ -156,7 +156,7 @@ namespace EditNET.Views
 
         internal MdiViewModel ViewModel => (MdiViewModel)DataContext!;
 
-        private EditorView? ActiveWindow => (EditorView?)WindowHost!.ActiveWindow;
+        private EditorView? ActiveWindow => (EditorView?)WindowHost.ActiveWindow;
 
         private AvaloniaEdit.TextEditor? ActiveEditor => ActiveWindow!.Editor;
 
