@@ -49,12 +49,6 @@ namespace EditNET.Views
             Loaded += OnLoaded;
         }
 
-        protected override void OnMinimizeWindow()
-        {
-            // not allowing to minimize.
-            RestoreCommand.Execute(null);
-        }
-
         private MainWindow MainWindow => this.FindAncestorOfType<MainWindow>()!;
         private MdiView MdiView => this.FindAncestorOfType<MdiView>()!;
 
@@ -66,6 +60,12 @@ namespace EditNET.Views
 
         private static IClassicDesktopStyleApplicationLifetime Lifetime
             => (IClassicDesktopStyleApplicationLifetime)Application.Current!.ApplicationLifetime!;
+
+        protected override void OnMinimizeWindow()
+        {
+            // not allowing to minimize.
+            RestoreCommand.Execute(null);
+        }
 
         protected override void OnDataContextChanged(EventArgs e)
         {
@@ -81,7 +81,7 @@ namespace EditNET.Views
             editorViewModel.FocusEditorInteraction.RegisterHandler(FocusEditorHandler)
                 .DisposeWith(_dataContextHandlers);
             editorViewModel.ActivateInteraction.RegisterHandler(ActivateHandler).DisposeWith(_dataContextHandlers);
-            
+
             editorViewModel.SaveFileInteraction.RegisterHandler(SaveFileHandler).DisposeWith(_dataContextHandlers);
             editorViewModel.WhenAnyValue(model => model.FilePath).Subscribe(OnFilePathChanged)
                 .DisposeWith(_dataContextHandlers);
@@ -99,7 +99,7 @@ namespace EditNET.Views
         {
             if (!((ConsoloniaLifetime)Lifetime).IsRgbColorMode())
                 return;
-            
+
             IRawTheme? theme = _registryOptions.LoadTheme(settings.SyntaxTheme);
             _textMateInstallation.SetTheme(theme);
         }
@@ -190,7 +190,9 @@ namespace EditNET.Views
         private void ApplyThemeColorsToEditor(TextMate.Installation e)
         {
             //ApplyBrushAction(e, "editor.background", brush => Editor.Background = brush);
-            ApplyBrushAction(e, "editor.background", brush => Background = brush);// instead of editor background, because we do intentional overlap with border
+            ApplyBrushAction(e, "editor.background",
+                brush => Background =
+                    brush); // instead of editor background, because we do intentional overlap with border
             ApplyBrushAction(e, "editor.foreground", brush => Editor.TextArea.Foreground = brush);
 
             if (!ApplyBrushAction(e, "editor.selectionBackground",
@@ -235,7 +237,8 @@ namespace EditNET.Views
         {
             //todo: it looks like it must be part of viewmodel
             if (MdiView.ViewModel.Documents.Contains(ViewModel!))
-            {// user wants to close
+            {
+                // user wants to close
                 e.Cancel = true;
                 if (!await ViewModel!.CheckSaved())
                 {

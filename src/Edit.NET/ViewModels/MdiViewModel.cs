@@ -14,10 +14,6 @@ namespace EditNET.ViewModels
 {
     public partial class MdiViewModel : ObservableObject
     {
-        public Interaction<Unit, string?> OpenFileInteraction { get; } = new();
-        public Interaction<Unit, Unit> ShutdownInteraction { get; } = new();
-
-        public ObservableCollection<EditorViewModel> Documents { get; } = [];
         [ObservableProperty] private EditorViewModel _activeDocument = null!;
         [ObservableProperty] private Settings _settings = null!;
 
@@ -27,10 +23,7 @@ namespace EditNET.ViewModels
             Documents.CollectionChanged += async (_, _) =>
             {
                 OnPropertyChanged(nameof(Documents));
-                if (Documents.Count == 0)
-                {
-                    await ShutdownInteraction.Handle(Unit.Default).ToTask();
-                }
+                if (Documents.Count == 0) await ShutdownInteraction.Handle(Unit.Default).ToTask();
             };
         }
 
@@ -41,6 +34,11 @@ namespace EditNET.ViewModels
         {
             _settings = settings;
         }
+
+        public Interaction<Unit, string?> OpenFileInteraction { get; } = new();
+        public Interaction<Unit, Unit> ShutdownInteraction { get; } = new();
+
+        public ObservableCollection<EditorViewModel> Documents { get; } = [];
 
         public async Task NewCommand()
         {
@@ -72,13 +70,11 @@ namespace EditNET.ViewModels
         public async Task ExitCommand()
         {
             foreach (EditorViewModel document in Documents)
-            {
                 if (!await document.CheckSaved())
                 {
                     await ActiveDocument.FocusEditorInteraction.Handle(Unit.Default);
                     return;
                 }
-            }
 
             await ShutdownInteraction.Handle(Unit.Default);
         }

@@ -83,7 +83,7 @@ namespace EditNET
                 if (desktopLifetime.Args is { Length: > 0 })
                     await ViewModel.MdiViewModel.OpenFile(desktopLifetime.Args[0]);
                 else await ViewModel.MdiViewModel.NewCommand();
-                
+
                 if (PipingWorkaround.PipedInputContent != null)
                     ViewModel.MdiViewModel.ActiveDocument.AppendContent(PipingWorkaround.PipedInputContent);
             }, DispatcherPriority.ContextIdle);
@@ -106,10 +106,7 @@ namespace EditNET
             if (!((ConsoloniaLifetime)ApplicationLifetime!).IsRgbColorMode() &&
                 theme is ConsoloniaTheme.Modern or ConsoloniaTheme.ModernContrast)
             {
-                if (Styles[0] is ModernTheme or ModernContrastTheme)
-                {
-                    Styles[0] = new TurboVisionCompatibleTheme();
-                }
+                if (Styles[0] is ModernTheme or ModernContrastTheme) Styles[0] = new TurboVisionCompatibleTheme();
                 return false;
             }
 

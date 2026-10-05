@@ -60,7 +60,7 @@ namespace EditNET.ViewModels
             Modified = true;
             UpdateStatusInteraction.Handle(Unit.Default).Wait();
         }
-        
+
         public async Task SaveCommand()
         {
             if (FilePath == null)
@@ -69,7 +69,7 @@ namespace EditNET.ViewModels
 
             await FocusEditorInteraction.Handle(Unit.Default);
         }
-        
+
         public async Task SaveAsCommand()
         {
             string? filePath = await SaveFileInteraction.Handle(Unit.Default);
@@ -81,7 +81,7 @@ namespace EditNET.ViewModels
 
             await FocusEditorInteraction.Handle(Unit.Default);
         }
-        
+
         public void AppendContent(string content)
         {
             Document.Insert(Document.TextLength, content);
@@ -109,8 +109,9 @@ namespace EditNET.ViewModels
                 return true;
 
             ActivateInteraction.Handle(Unit.Default).Wait();
-            
-            MessageBoxResult messageBoxResult = await MessageBoxInteraction.Handle(new MessageBoxModel("Unsaved Changes",
+
+            MessageBoxResult messageBoxResult = await MessageBoxInteraction.Handle(new MessageBoxModel(
+                "Unsaved Changes",
                 "You have unsaved changes. Do you want to save them?", MessageBoxButtons.YesNo));
 
             switch (messageBoxResult)
@@ -118,7 +119,7 @@ namespace EditNET.ViewModels
                 case MessageBoxResult.Cancel:
                     return false;
                 case MessageBoxResult.No:
-                    return true; 
+                    return true;
                 case MessageBoxResult.Yes:
                     await SaveCommand();
                     return !Modified;

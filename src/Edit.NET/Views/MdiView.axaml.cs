@@ -14,6 +14,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using Avalonia.VisualTree;
+using AvaloniaEdit;
 using Consolonia.Themes.Infrastructure;
 using DynamicData.Binding;
 using EditNET.DataModels;
@@ -40,6 +41,13 @@ namespace EditNET.Views
         }
 
         private MainWindow MainWindow => this.FindAncestorOfType<MainWindow>()!;
+
+
+        internal MdiViewModel ViewModel => (MdiViewModel)DataContext!;
+
+        private EditorView? ActiveWindow => (EditorView?)WindowHost.ActiveWindow;
+
+        private TextEditor? ActiveEditor => ActiveWindow!.Editor;
 
         protected override void OnDataContextChanged(EventArgs e)
         {
@@ -92,10 +100,7 @@ namespace EditNET.Views
         protected override void OnLoaded(RoutedEventArgs e)
         {
             base.OnLoaded(e);
-            foreach (EditorViewModel editorViewModel in ViewModel.Documents)
-            {
-                AddDocument(editorViewModel);
-            }
+            foreach (EditorViewModel editorViewModel in ViewModel.Documents) AddDocument(editorViewModel);
         }
 
         private void AddDocument(EditorViewModel newDocument)
@@ -113,11 +118,9 @@ namespace EditNET.Views
                 Height = Bounds.Height * 2 / 3 - ViewModel.Documents.Count
             };
 
-            
-            if ((string?)this.FindResource(AutoThemeStylesBase.ConsoloniaThemeFamilyKey) == AutoThemeStylesBase.TurboVisionThemeKey)
-            {
-                editorView.Padding = new Thickness(0, 0, -1, -1);
-            }
+
+            if ((string?)this.FindResource(AutoThemeStylesBase.ConsoloniaThemeFamilyKey) ==
+                AutoThemeStylesBase.TurboVisionThemeKey) editorView.Padding = new Thickness(0, 0, -1, -1);
 
             editorView.Activated += async (activeWindow, _) =>
             {
@@ -125,18 +128,13 @@ namespace EditNET.Views
                 ViewModel.ActiveDocument = editorViewModel;
 
                 foreach (MenuItem menuItem in ViewMenuItem.Items.OfType<MenuItem>().ToArray())
-                {
                     menuItem.IsChecked = menuItem.DataContext == editorViewModel;
-                }
 
                 await editorViewModel.FocusEditorInteraction.Handle(Unit.Default);
             };
 
             editorView.Show(WindowHost);
-            if (maximize)
-            {
-                editorView.MaximizeCommand.Execute(null);
-            }
+            if (maximize) editorView.MaximizeCommand.Execute(null);
 
             var menuItem = new MenuItem
             {
@@ -152,13 +150,6 @@ namespace EditNET.Views
             editorView.WhenValueChanged(view => view.Title).BindTo(menuItem, item => item.Header);
             ViewMenuItem.Items.Add(menuItem);
         }
-
-
-        internal MdiViewModel ViewModel => (MdiViewModel)DataContext!;
-
-        private EditorView? ActiveWindow => (EditorView?)WindowHost.ActiveWindow;
-
-        private AvaloniaEdit.TextEditor? ActiveEditor => ActiveWindow!.Editor;
 
         private async void MenuItem_OnClick(object? sender, RoutedEventArgs e)
         {
@@ -177,7 +168,7 @@ namespace EditNET.Views
 
         private void EditMenu_OnSubmenuOpened(object sender, RoutedEventArgs e)
         {
-            AvaloniaEdit.TextEditor editor = ActiveEditor!;
+            TextEditor editor = ActiveEditor!;
             UndoMenuItem.IsEnabled = editor.CanUndo;
             RedoMenuItem.IsEnabled = editor.CanRedo;
             CutMenuItem.IsEnabled = editor is { SelectionLength: > 0 };

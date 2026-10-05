@@ -79,9 +79,12 @@
             </MenuItem>
             <MenuItem Header="_View"
                       x:Name="ViewMenuItem">
-                <MenuItem Header="_Maximize" Click="MaximizeMenuItem_OnClick"/>
-                <MenuItem Header="_Restore" Click="RestoreMenuItem_OnClick"/>
-                <MenuItem Header="_Close" Click="CloseMenuItem_OnClick"/>
+                <MenuItem Header="_Maximize"
+                          Click="MaximizeMenuItem_OnClick" />
+                <MenuItem Header="_Restore"
+                          Click="RestoreMenuItem_OnClick" />
+                <MenuItem Header="_Close"
+                          Click="CloseMenuItem_OnClick" />
                 <Separator />
             </MenuItem>
             <MenuItem Header="_Help">
@@ -108,8 +111,9 @@
                            Text="Ln 1, Col 1" />
                 <TextBlock Name="LengthText"
                            Text="Len 0" />
-                <TextBlock Text="{Binding ActiveDocument.Modified, Converter={x:Static editNet:EditConverters.ModifiedConverter}}"
-                           HorizontalAlignment="Right" />
+                <TextBlock
+                    Text="{Binding ActiveDocument.Modified, Converter={x:Static editNet:EditConverters.ModifiedConverter}}"
+                    HorizontalAlignment="Right" />
             </UniformGrid>
         </Border>
         <windowManager:WindowsPanel x:Name="WindowHost" />
