@@ -105,7 +105,13 @@ namespace EditNET
         {
             if (!((ConsoloniaLifetime)ApplicationLifetime!).IsRgbColorMode() &&
                 theme is ConsoloniaTheme.Modern or ConsoloniaTheme.ModernContrast)
+            {
+                if (Styles[0] is ModernTheme or ModernContrastTheme)
+                {
+                    Styles[0] = new TurboVisionCompatibleTheme();
+                }
                 return false;
+            }
 
             Styles[0] = theme switch
             {
