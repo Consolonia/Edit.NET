@@ -49,6 +49,12 @@ namespace EditNET.Views
             Loaded += OnLoaded;
         }
 
+        protected override void OnMinimizeWindow()
+        {
+            // not allowing to minimize.
+            RestoreCommand.Execute(null);
+        }
+
         private MainWindow MainWindow => this.FindAncestorOfType<MainWindow>()!;
         private MdiView MdiView => this.FindAncestorOfType<MdiView>()!;
 
