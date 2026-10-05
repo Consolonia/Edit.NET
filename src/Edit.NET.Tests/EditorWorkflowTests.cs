@@ -127,7 +127,7 @@ namespace EditNET.Tests
             // is the last item), without any mouse or direct code invocation.
             await UITest.KeyInput(Key.F, RawInputModifiers.Alt);
             await UITest.AssertHasText("Exit");
-            await UITest.KeyInput(Key.X);
+            await UITest.KeyInput(Key.Down,Key.Down,Key.Down, Key.Down, Key.Enter);
             await UITest.WaitRendered(); // let the confirmation dialog finish rendering
 
             await UITest.AssertHasText("Unsaved", "unsaved changes");
