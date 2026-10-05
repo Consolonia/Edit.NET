@@ -32,11 +32,12 @@ namespace EditNET.Tests
             await UITest.AssertHasText("Len 14");
             await UITest.AssertHasText("Modified");
 
-            // The "New" command on an unsaved document prompts and can be cancelled.
-            // Open the "File" menu and activate "New" (the first item).
-            await UITest.KeyInput(Key.F, RawInputModifiers.Alt);
-            await UITest.KeyInput(Key.Down); // highlight "New"
-            await UITest.KeyInput(Key.Enter);
+            // The "Close" command on an unsaved document prompts and can be cancelled.
+            // Open the "View" menu and activate "Close".
+            await UITest.KeyInput(Key.V, RawInputModifiers.Alt);
+            await UITest.AssertHasText("Close");
+            await UITest.KeyInput(Key.C);
+            await UITest.WaitRendered();
 
             // There are unsaved changes, so a confirmation dialog is shown; cancel it and keep
             // editing the current, still unsaved, document.
@@ -126,8 +127,7 @@ namespace EditNET.Tests
             // is the last item), without any mouse or direct code invocation.
             await UITest.KeyInput(Key.F, RawInputModifiers.Alt);
             await UITest.AssertHasText("Exit");
-            await UITest.KeyInput(Key.Down, Key.Down, Key.Down, Key.Down, Key.Down);
-            await UITest.KeyInput(Key.Enter);
+            await UITest.KeyInput(Key.X);
             await UITest.WaitRendered(); // let the confirmation dialog finish rendering
 
             await UITest.AssertHasText("Unsaved", "unsaved changes");
