@@ -36,7 +36,7 @@ namespace EditNET.Tests
             // Open the "View" menu and activate "Close".
             await UITest.KeyInput(Key.V, RawInputModifiers.Alt);
             await UITest.AssertHasText("Close");
-            await UITest.KeyInput(Key.C);
+            await UITest.KeyInput(Key.Down, Key.Down, Key.Enter);
             await UITest.WaitRendered();
 
             // There are unsaved changes, so a confirmation dialog is shown; cancel it and keep
