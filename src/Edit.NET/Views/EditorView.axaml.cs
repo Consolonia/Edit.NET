@@ -1,14 +1,11 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Data;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
@@ -19,16 +16,15 @@ using AvaloniaEdit.TextMate;
 using Consolonia;
 using Consolonia.Controls;
 using EditNET.DataModels;
-using EditNET.Helpers;
 using EditNET.ViewModels;
-using Iciclecreek.Terminal;
+using Iciclecreek.Avalonia.WindowManager;
 using ReactiveUI;
 using TextMateSharp.Grammars;
 using TextMateSharp.Themes;
 
 namespace EditNET.Views
 {
-    public partial class EditorView : UserControl
+    public partial class EditorView : ManagedWindow
     {
         public const ThemeName DefaultEditorTheme = ThemeName.DimmedMonokai;
         private readonly RegistryOptions _registryOptions;
@@ -51,14 +47,10 @@ namespace EditNET.Views
             ApplyThemeColorsToEditor(_textMateInstallation);
 
             Loaded += OnLoaded;
-
-            //todo: 8D932615-A858-4063-835C-CDFCD5FFB799 check that it's still necessary in tests once tests added
-            StyledProperty<IList<string>>
-                unused = TerminalControl
-                    .ArgsProperty; //initializaing the control, it changes the style and they become unavailable due some Avalonia issue
         }
 
         private MainWindow MainWindow => this.FindAncestorOfType<MainWindow>()!;
+        private MdiView MdiView => this.FindAncestorOfType<MdiView>()!;
 
         public EditorViewModel? ViewModel
         {
@@ -68,6 +60,12 @@ namespace EditNET.Views
 
         private static IClassicDesktopStyleApplicationLifetime Lifetime
             => (IClassicDesktopStyleApplicationLifetime)Application.Current!.ApplicationLifetime!;
+
+        protected override void OnMinimizeWindow()
+        {
+            // not allowing to minimize.
+            RestoreCommand.Execute(null);
+        }
 
         protected override void OnDataContextChanged(EventArgs e)
         {
@@ -82,8 +80,8 @@ namespace EditNET.Views
             editorViewModel.MessageBoxInteraction.RegisterHandler(MessageBoxHandler).DisposeWith(_dataContextHandlers);
             editorViewModel.FocusEditorInteraction.RegisterHandler(FocusEditorHandler)
                 .DisposeWith(_dataContextHandlers);
-            editorViewModel.ShutdownInteraction.RegisterHandler(ShutDownHandler).DisposeWith(_dataContextHandlers);
-            editorViewModel.OpenFileInteraction.RegisterHandler(OpenFileHandler).DisposeWith(_dataContextHandlers);
+            editorViewModel.ActivateInteraction.RegisterHandler(ActivateHandler).DisposeWith(_dataContextHandlers);
+
             editorViewModel.SaveFileInteraction.RegisterHandler(SaveFileHandler).DisposeWith(_dataContextHandlers);
             editorViewModel.WhenAnyValue(model => model.FilePath).Subscribe(OnFilePathChanged)
                 .DisposeWith(_dataContextHandlers);
@@ -121,30 +119,6 @@ namespace EditNET.Views
             _textMateInstallation.SetGrammar(scope);
         }
 
-        private async Task OpenFileHandler(IInteractionContext<Unit, string?> interactionContext)
-        {
-            IStorageProvider storageProvider = MainWindow.StorageProvider;
-            IReadOnlyList<IStorageFile> files = await storageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
-            {
-                AllowMultiple = false,
-                SuggestedStartLocation =
-                    await storageProvider.TryGetFolderFromPathAsync(Directory.GetCurrentDirectory()),
-                Title = "Open File"
-            });
-
-            // ReSharper disable ConditionalAccessQualifierIsNonNullableAccordingToAPIContract todo: check why we declare not to be null while returning null
-            if (files?.Count > 0)
-                // ReSharper restore ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
-            {
-                IStorageFile file = files[0];
-                interactionContext.SetOutput(file.Path.AbsolutePath);
-            }
-            else
-            {
-                interactionContext.SetOutput(null);
-            }
-        }
-
         private async Task SaveFileHandler(IInteractionContext<Unit, string?> context)
         {
             IStorageFile? file = await MainWindow.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
@@ -158,10 +132,10 @@ namespace EditNET.Views
             context.SetOutput(file?.Path.AbsolutePath);
         }
 
-        private static void ShutDownHandler(IInteractionContext<Unit, Unit> context)
+        private void ActivateHandler(IInteractionContext<Unit, Unit> context)
         {
-            ((IClassicDesktopStyleApplicationLifetime)Application.Current!.ApplicationLifetime!).Shutdown();
             context.SetOutput(Unit.Default);
+            Activate();
         }
 
         private async void FocusEditorHandler(IInteractionContext<Unit, Unit> context)
@@ -170,7 +144,7 @@ namespace EditNET.Views
             await FocusInternal();
         }
 
-        private async Task FocusInternal()
+        internal async Task FocusInternal()
         {
             await Task.Delay(500); // todo: low magic number, I don't know how to make focus working
             Dispatcher.UIThread.Post(_ => { Editor.TextArea.Focus(); }, null);
@@ -197,10 +171,10 @@ namespace EditNET.Views
             // Position
             int line = Editor.TextArea.Caret.Line;
             int column = Editor.TextArea.Caret.Column;
-            PositionText.Text = $"Ln {line}, Col {column}";
+            MdiView.PositionText.Text = $"Ln {line}, Col {column}";
             // Length
             int length = Editor.Document?.TextLength ?? Editor.Text?.Length ?? 0;
-            LengthText.Text = $"Len {length}";
+            MdiView.LengthText.Text = $"Len {length}";
         }
 
         private void OnLoaded(object? sender, RoutedEventArgs routedEventArgs)
@@ -215,7 +189,10 @@ namespace EditNET.Views
 
         private void ApplyThemeColorsToEditor(TextMate.Installation e)
         {
-            ApplyBrushAction(e, "editor.background", brush => Editor.Background = brush);
+            //ApplyBrushAction(e, "editor.background", brush => Editor.Background = brush);
+            ApplyBrushAction(e, "editor.background",
+                brush => Background =
+                    brush); // instead of editor background, because we do intentional overlap with border
             ApplyBrushAction(e, "editor.foreground", brush => Editor.TextArea.Foreground = brush);
 
             if (!ApplyBrushAction(e, "editor.selectionBackground",
@@ -251,25 +228,26 @@ namespace EditNET.Views
             }
         }
 
-        private async void MenuItem_OnClick(object? sender, RoutedEventArgs e)
+        private void ManagedWindow_OnActivated(object? sender, EventArgs e)
         {
-            await new AboutWindow().ShowModalAsync(this);
-            await FocusInternal();
+            UpdateStatus();
         }
 
-        private async void OnShowSettings(object? sender, RoutedEventArgs e)
+        private async void ManagedWindow_OnClosing(object? sender, WindowClosingEventArgs e)
         {
-            var dlg = new EditSettingsDialog(ViewModel!.Settings.SerializedCopy());
-            await dlg.ShowModalAsync(this);
-            Settings? newSettings = dlg.Result;
-            if (newSettings != null) ViewModel.Settings = newSettings;
-            await FocusInternal();
-        }
+            //todo: it looks like it must be part of viewmodel
+            if (MdiView.ViewModel.Documents.Contains(ViewModel!))
+            {
+                // user wants to close
+                e.Cancel = true;
+                if (!await ViewModel!.CheckSaved())
+                {
+                    await FocusInternal();
+                    return;
+                }
 
-        private void EditMenu_OnSubmenuOpened(object sender, RoutedEventArgs e)
-        {
-            foreach (MenuItem subMenu in ((MenuItem)sender).Items.OfType<MenuItem>())
-                BindingOperations.GetBindingExpressionBase(subMenu, IsEnabledProperty)?.UpdateTarget();
+                MdiView.ViewModel.Documents.Remove(ViewModel);
+            }
         }
     }
 }

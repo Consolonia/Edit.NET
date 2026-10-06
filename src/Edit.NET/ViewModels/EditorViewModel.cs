@@ -38,10 +38,9 @@ namespace EditNET.ViewModels
 
         public Interaction<MessageBoxModel, MessageBoxResult> MessageBoxInteraction { get; } = new();
         public Interaction<Unit, Unit> FocusEditorInteraction { get; } = new();
-        public Interaction<Unit, string?> OpenFileInteraction { get; } = new();
         public Interaction<Unit, string?> SaveFileInteraction { get; } = new();
-        public Interaction<Unit, Unit> ShutdownInteraction { get; } = new();
         public Interaction<Unit, Unit> UpdateStatusInteraction { get; } = new();
+        public Interaction<Unit, Unit> ActivateInteraction { get; } = new();
 
         private async void OnDocumentUpdatedNoInitial(TextDocument newDocument)
         {
@@ -60,40 +59,6 @@ namespace EditNET.ViewModels
         {
             Modified = true;
             UpdateStatusInteraction.Handle(Unit.Default).Wait();
-        }
-
-        public async Task NewCommand()
-        {
-            if (!await CheckSaved())
-            {
-                await FocusEditorInteraction.Handle(Unit.Default);
-                return;
-            }
-
-            Document = new TextDocument();
-            FilePath = null;
-
-            await FocusEditorInteraction.Handle(Unit.Default);
-        }
-
-        public async Task OpenCommand()
-        {
-            if (!await CheckSaved())
-            {
-                await FocusEditorInteraction.Handle(Unit.Default);
-                return;
-            }
-
-            string? filePath = await OpenFileInteraction.Handle(Unit.Default);
-            if (filePath == null)
-            {
-                await FocusEditorInteraction.Handle(Unit.Default);
-                return;
-            }
-
-            await OpenFile(Path.GetFullPath(filePath));
-
-            await FocusEditorInteraction.Handle(Unit.Default);
         }
 
         public async Task SaveCommand()
@@ -117,33 +82,6 @@ namespace EditNET.ViewModels
             await FocusEditorInteraction.Handle(Unit.Default);
         }
 
-        public async Task ExitCommand()
-        {
-            if (!await CheckSaved())
-            {
-                await FocusEditorInteraction.Handle(Unit.Default);
-                return;
-            }
-
-            await ShutdownInteraction.Handle(Unit.Default);
-        }
-
-        public async Task OpenFile(string path)
-        {
-            if (!Path.IsPathFullyQualified(path))
-                path = Path.GetFullPath(path, Environment.CurrentDirectory);
-            FilePath = path;
-            if (File.Exists(FilePath))
-                await HandleFileExceptions(async () =>
-                {
-                    Document = new TextDocument(new StringTextSource(await File.ReadAllTextAsync(path)));
-                });
-
-            string? directoryName = Path.GetDirectoryName(path);
-            if (!string.IsNullOrEmpty(directoryName)) // path can be in the current directory
-                Directory.SetCurrentDirectory(directoryName);
-        }
-
         public void AppendContent(string content)
         {
             Document.Insert(Document.TextLength, content);
@@ -165,25 +103,32 @@ namespace EditNET.ViewModels
             }
         }
 
-        private async Task<bool> CheckSaved()
+        public async Task<bool> CheckSaved()
         {
             if (!Modified)
                 return true;
 
-            MessageBoxResult shouldSave = await MessageBoxInteraction.Handle(new MessageBoxModel("Unsaved Changes",
+            ActivateInteraction.Handle(Unit.Default).Wait();
+
+            MessageBoxResult messageBoxResult = await MessageBoxInteraction.Handle(new MessageBoxModel(
+                "Unsaved Changes",
                 "You have unsaved changes. Do you want to save them?", MessageBoxButtons.YesNo));
 
-            if (shouldSave == MessageBoxResult.Cancel)
-                return false;
-
-            if (shouldSave == MessageBoxResult.No)
-                return true;
-
-            await SaveCommand();
-            return !Modified;
+            switch (messageBoxResult)
+            {
+                case MessageBoxResult.Cancel:
+                    return false;
+                case MessageBoxResult.No:
+                    return true;
+                case MessageBoxResult.Yes:
+                    await SaveCommand();
+                    return !Modified;
+                case MessageBoxResult.Ok:
+                default: throw new NotSupportedException();
+            }
         }
 
-        private async Task HandleFileExceptions(Func<Task> action)
+        internal async Task HandleFileExceptions(Func<Task> action)
         {
             try
             {

@@ -50,17 +50,17 @@ namespace EditNET
                 return;
             }
 
-            MainWindow.Content = new EditorView { DataContext = ViewModel.EditorViewModel };
+            MainWindow.Content = new MdiView { DataContext = ViewModel.MdiViewModel };
         }
 
         public override void OnFrameworkInitializationCompleted()
         {
             var desktopLifetime = (IClassicDesktopStyleApplicationLifetime)ApplicationLifetime!;
-            bool themeLoaded = LoadUiTheme(ViewModel.EditorViewModel.Settings.ConsoloniaTheme);
+            bool themeLoaded = LoadUiTheme(ViewModel.MdiViewModel.Settings.ConsoloniaTheme);
             desktopLifetime.MainWindow = new MainWindow
             {
                 DataContext = ViewModel,
-                RequestedThemeVariant = ViewModel.EditorViewModel.Settings.LightVariant
+                RequestedThemeVariant = ViewModel.MdiViewModel.Settings.LightVariant
                     ? ThemeVariant.Light
                     : ThemeVariant.Dark
             };
@@ -81,10 +81,11 @@ namespace EditNET
             Dispatcher.UIThread.Post(async () =>
             {
                 if (desktopLifetime.Args is { Length: > 0 })
-                    await ViewModel.EditorViewModel.OpenFile(desktopLifetime.Args[0]);
+                    await ViewModel.MdiViewModel.OpenFile(desktopLifetime.Args[0]);
+                else ViewModel.MdiViewModel.NewCommand();
 
                 if (PipingWorkaround.PipedInputContent != null)
-                    ViewModel.EditorViewModel.AppendContent(PipingWorkaround.PipedInputContent);
+                    ViewModel.MdiViewModel.ActiveDocument.AppendContent(PipingWorkaround.PipedInputContent);
             }, DispatcherPriority.ContextIdle);
         }
 
@@ -104,7 +105,10 @@ namespace EditNET
         {
             if (!((ConsoloniaLifetime)ApplicationLifetime!).IsRgbColorMode() &&
                 theme is ConsoloniaTheme.Modern or ConsoloniaTheme.ModernContrast)
+            {
+                if (Styles[0] is ModernTheme or ModernContrastTheme) Styles[0] = new TurboVisionCompatibleTheme();
                 return false;
+            }
 
             Styles[0] = theme switch
             {
