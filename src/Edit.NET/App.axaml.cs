@@ -83,7 +83,7 @@ namespace EditNET
                 if (desktopLifetime.Args is { Length: > 0 })
                     await ViewModel.MdiViewModel.OpenFile(desktopLifetime.Args[0]);
                 else ViewModel.MdiViewModel.NewCommand();
-                
+
                 if (PipingWorkaround.PipedInputContent != null)
                     ViewModel.MdiViewModel.ActiveDocument.AppendContent(PipingWorkaround.PipedInputContent);
             }, DispatcherPriority.ContextIdle);
