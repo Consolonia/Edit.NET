@@ -15,7 +15,7 @@ namespace EditNET.Helpers.ThirdPartyStorageProviders
         {
             var mainWindow = (MainWindow)topLevel;
             var appViewModel = (AppViewModel)mainWindow.DataContext!;
-            EditorViewModel editorViewModel = appViewModel.EditorViewModel;
+            MdiViewModel editorViewModel = appViewModel.MdiViewModel;
 
             return editorViewModel.Settings.FilePicker switch
             {

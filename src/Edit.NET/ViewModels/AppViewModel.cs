@@ -42,14 +42,13 @@ namespace EditNET.ViewModels
             settings ??= new Settings();
             _consoloniaTheme = settings.ConsoloniaTheme;
             _consoloniaThemeLight = settings.LightVariant;
-            EditorViewModel = new EditorViewModel(settings);
-            EditorViewModel.WhenAnyValue(model => model.Settings).Skip(1).Subscribe(OnSettingsUpdated);
+            MdiViewModel = new MdiViewModel(settings);
+            MdiViewModel.WhenAnyValue(model => model.Settings).Skip(1).Subscribe(OnSettingsUpdated);
         }
 
-        public EditorViewModel EditorViewModel { get; }
+        public MdiViewModel MdiViewModel { get; }
         public Interaction<(ConsoloniaTheme, bool), Unit> SetThemeInteraction { get; } = new();
         public Interaction<Notification, Unit> ShowNotificationInteraction { get; } = new();
-        public Interaction<Unit, Unit> SetStorageProviderInteraction { get; } = new();
         public Exception? InitialLoadSettingsException { get; }
 
         private void OnSettingsUpdated(Settings settings)

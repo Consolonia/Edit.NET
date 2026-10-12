@@ -5,7 +5,7 @@
              xmlns:modal="clr-namespace:Consolonia.Modal;assembly=Consolonia.Modal"
              x:Class="EditNET.App">
     <Application.Styles>
-        <console:TurboVisionCompatibleTheme />
+        <console:ModernTheme />
         <modal:ModalTheme />
         <StyleInclude Source="avares://Consolonia.AvaloniaEdit/Theme.axaml" />
         <managedWindows:AutoManagedWindowStyles />

@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using System.IO;
 using Avalonia.Data.Converters;
+using EditNET.ViewModels;
 
 namespace EditNET
 {
@@ -9,6 +11,10 @@ namespace EditNET
             new FuncValueConverter<bool, string>(modified => modified ? "Modified" : "Saved");
 
         public static readonly IValueConverter FilePathToNameConverter =
-            new FuncValueConverter<string, string>(filePath => Path.GetFileName(filePath)!);
+            new FuncValueConverter<string, string>(filePath =>
+                string.IsNullOrEmpty(filePath) ? "Untitled" : Path.GetFileName(filePath));
+
+        public static readonly IValueConverter DocumentsObservableCollectionToInfoConverter =
+            new FuncValueConverter<ICollection<EditorViewModel>, string>(models => $"{models!.Count} document(s)");
     }
 }
