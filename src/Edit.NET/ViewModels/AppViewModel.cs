@@ -1,9 +1,12 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Avalonia.Controls.Notifications;
+using CommandLine;
 using CommunityToolkit.Mvvm.ComponentModel;
 using EditNET.DataModels;
 using ReactiveUI;
@@ -76,6 +79,34 @@ namespace EditNET.ViewModels
                 await ShowNotificationInteraction.Handle(new Notification("Settings Error",
                     "Failed to save settings file: " + exception.Message, NotificationType.Error));
             }
+        }
+
+        public async Task ParseArguments(string[] desktopLifetimeArgs)
+        {
+            ParserResult<StartupArguments> parserResult =
+                Parser.Default.ParseArguments<StartupArguments>(desktopLifetimeArgs);
+
+            switch (parserResult.Tag)
+            {
+                case ParserResultType.Parsed:
+                    MdiViewModel.Debug = parserResult.Value.Debug;
+                    if (!string.IsNullOrEmpty(parserResult.Value.File))
+                        await MdiViewModel.OpenFile(parserResult.Value.File);
+                    else
+                        MdiViewModel.NewCommand();
+                    break;
+                case ParserResultType.NotParsed:
+                    MdiViewModel.NewCommand();
+                    string errorMessage = parserResult.Errors.Aggregate("Invalid arguments provided:",
+                        (current, error) => current + (Environment.NewLine + error));
+                    await MdiViewModel.ActiveDocument.MessageBoxInteraction.Handle(
+                        new MessageBoxModel("Error", errorMessage, MessageBoxButtons.Ok));
+                    await Console.Error.WriteLineAsync(errorMessage);
+                    break;
+            }
+
+            if (PipingWorkaround.PipedInputContent != null)
+                MdiViewModel.ActiveDocument.AppendContent(PipingWorkaround.PipedInputContent);
         }
     }
 }

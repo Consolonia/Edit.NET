@@ -10,15 +10,12 @@ namespace EditNET
 {
     public static partial class Program
     {
-        private static Thread? _mainThread;
-
         private static void Main(string[] args)
         {
-            //Thread.Sleep(20000);
+            App.HandleProcessExceptions(Thread.CurrentThread);
 
             PipingWorkaround.ReadPipedInputAndReattachStdInFromTerminalIfRedirected();
 
-            _mainThread = Thread.CurrentThread;
             BuildAvaloniaApp()
                 .StartWithConsoleLifetime(args);
         }

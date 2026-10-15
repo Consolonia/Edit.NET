@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -249,6 +250,33 @@ namespace EditNET.Views
         private void CloseMenuItem_OnClick(object? sender, RoutedEventArgs e)
         {
             ActiveWindow!.CloseCommand.Execute(null);
+        }
+
+        private void ThrowFromDispatcher_OnClick(object? sender, RoutedEventArgs e)
+        {
+            throw new InvalidOperationException("This is test exception thrown from dispatcher. Please, ignore this");
+        }
+
+        private void ThrowFromThreadPool_OnClick(object? sender, RoutedEventArgs e)
+        {
+            ThreadPool.QueueUserWorkItem(_ =>
+                throw new InvalidOperationException(
+                    "This is test exception thrown from thread pool. Please, ignore this"));
+        }
+
+        private void ThrowFromUnobservedTask_OnClick(object? sender, RoutedEventArgs e)
+        {
+            Task.Run(() =>
+                throw new InvalidOperationException(
+                    "This is test exception thrown from unobserved task. Please, ignore this"));
+
+            ThreadPool.QueueUserWorkItem(_ =>
+            {
+                Dispatcher.Invoke(() => { }); //parent method must exit before we can collect the task
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+            });
         }
     }
 }
