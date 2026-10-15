@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -16,7 +18,55 @@ namespace EditNET
         ///     was handled already
         ///     Why not just to show it from UnobservedTask? Because we don't know when that will happen (finalizer call)
         /// </summary>
-        internal static readonly object HandledExceptionHackMark = new();
+        private static readonly object HandledExceptionHackMark = new();
+      
+        /// <param name="threadToExclude">
+        ///     Thread exceptions of which must crash the application regularly. Null if there is no such
+        ///     thread
+        /// </param>
+        internal static void HandleProcessExceptions(Thread? threadToExclude)
+        {
+            ExceptionHandling.SetUnhandledExceptionHandler(exception =>
+            {
+                if (threadToExclude != null && Thread.CurrentThread == threadToExclude)
+                    return false;
+
+                if (exception is CrashAppException)
+                {
+                    Debug.WriteLine("Application is going to crash");
+                    if (Debugger.IsAttached)
+                        Debugger.Break();
+                    return false;
+                }
+
+                _ = ShowApplicationError(exception);
+#if HANDLE_CRASH
+                // preventing process from crash in RELEASE
+                return true;
+#else
+                return false;
+#endif
+            });
+
+            TaskScheduler.UnobservedTaskException += (_, args) =>
+            {
+                if (args.Exception.InnerException is CrashAppException)
+                    ThreadPool.QueueUserWorkItem(_ => throw new CrashAppException(args.Exception));
+
+                args.SetObserved();
+
+                if (args.Exception.InnerException!.Data.Contains(HandledExceptionHackMark))
+                    return;
+
+                if (Debugger.IsAttached)
+                {
+                    Debug.WriteLine("An Unhandled exception was thrown.");
+                    Debugger.Break();
+                }
+
+                _ = ShowApplicationError(args.Exception);
+            };
+        }
 
         private static void HandleDispatcherExceptions()
         {
@@ -34,11 +84,11 @@ namespace EditNET
 
         /// <summary>
         ///     Try to show a message box with the error and suggest to restart the application.
-        ///     If the dialog is not closed within 30 seconds or if it's throws an exception the application will do a regular
+        ///     If the dialog is not closed within 60 seconds or if it's throws an exception the application will do a regular
         ///     crash
         /// </summary>
         /// <param name="exception">Exception to report</param>
-        internal static async Task ShowApplicationError(Exception exception)
+        private static async Task ShowApplicationError(Exception exception)
         {
             //todo: there is no much sense to show the exception to users. We should report it via telemetry ourselves
 
