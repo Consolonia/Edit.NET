@@ -7,9 +7,9 @@ namespace EditNET.DataModels
     public class StartupArguments
     {
         [Value(0, MetaName = "file", Required = false, HelpText = "The path to the file to open")]
-        public string? File { get; set; }
+        public string? File { get; [UsedImplicitly] set; }
 
         [Option('d', "debug", Required = false, HelpText = "Whether to run in debug mode")]
-        public bool Debug { get; set; }
+        public bool Debug { get; [UsedImplicitly] set; }
     }
 }

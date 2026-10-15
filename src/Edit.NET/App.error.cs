@@ -48,7 +48,7 @@ namespace EditNET
 #endif
             });
 
-            TaskScheduler.UnobservedTaskException += (_, args) =>
+            TaskScheduler.UnobservedTaskException += (_2, args) =>
             {
                 if (args.Exception.InnerException is CrashAppException)
                     ThreadPool.QueueUserWorkItem(_ => throw new CrashAppException(args.Exception));
