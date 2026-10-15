@@ -19,7 +19,7 @@ namespace EditNET
         ///     Why not just to show it from UnobservedTask? Because we don't know when that will happen (finalizer call)
         /// </summary>
         private static readonly object HandledExceptionHackMark = new();
-      
+
         /// <param name="threadToExclude">
         ///     Thread exceptions of which must crash the application regularly. Null if there is no such
         ///     thread

@@ -83,7 +83,8 @@ namespace EditNET.ViewModels
 
         public async Task ParseArguments(string[] desktopLifetimeArgs)
         {
-            ParserResult<StartupArguments> parserResult = Parser.Default.ParseArguments<StartupArguments>(desktopLifetimeArgs);
+            ParserResult<StartupArguments> parserResult =
+                Parser.Default.ParseArguments<StartupArguments>(desktopLifetimeArgs);
 
             switch (parserResult.Tag)
             {
@@ -98,11 +99,12 @@ namespace EditNET.ViewModels
                     MdiViewModel.NewCommand();
                     string errorMessage = parserResult.Errors.Aggregate("Invalid arguments provided:",
                         (current, error) => current + (Environment.NewLine + error));
-                    await MdiViewModel.ActiveDocument.MessageBoxInteraction.Handle(new MessageBoxModel("Error", errorMessage, MessageBoxButtons.Ok));
+                    await MdiViewModel.ActiveDocument.MessageBoxInteraction.Handle(
+                        new MessageBoxModel("Error", errorMessage, MessageBoxButtons.Ok));
                     await Console.Error.WriteLineAsync(errorMessage);
                     break;
             }
-                
+
             if (PipingWorkaround.PipedInputContent != null)
                 MdiViewModel.ActiveDocument.AppendContent(PipingWorkaround.PipedInputContent);
         }

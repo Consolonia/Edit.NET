@@ -91,11 +91,15 @@
                 <MenuItem Header="_About"
                           Click="MenuItem_OnClick" />
             </MenuItem>
-            <MenuItem Header="_Debug" IsVisible="{Binding Debug}">
+            <MenuItem Header="_Debug"
+                      IsVisible="{Binding Debug}">
                 <MenuItem Header="Exceptions">
-                    <MenuItem Header="Throw from within dispatcher" Click="ThrowFromDispatcher_OnClick"/>
-                    <MenuItem Header="Throw from thread pool" Click="ThrowFromThreadPool_OnClick"/>
-                    <MenuItem Header="Throw from unobserved task" Click="ThrowFromUnobservedTask_OnClick"/>
+                    <MenuItem Header="Throw from within dispatcher"
+                              Click="ThrowFromDispatcher_OnClick" />
+                    <MenuItem Header="Throw from thread pool"
+                              Click="ThrowFromThreadPool_OnClick" />
+                    <MenuItem Header="Throw from unobserved task"
+                              Click="ThrowFromUnobservedTask_OnClick" />
                 </MenuItem>
             </MenuItem>
         </Menu>

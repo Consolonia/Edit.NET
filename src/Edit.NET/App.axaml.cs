@@ -78,10 +78,8 @@ namespace EditNET
 
             if (!themeLoaded) ShowThemeIncompatible();
 
-            Dispatcher.UIThread.Post(async () =>
-            {
-                await ViewModel.ParseArguments(desktopLifetime.Args!);
-            }, DispatcherPriority.ContextIdle);
+            Dispatcher.UIThread.Post(async () => { await ViewModel.ParseArguments(desktopLifetime.Args!); },
+                DispatcherPriority.ContextIdle);
         }
 
         private void ShowThemeIncompatible()

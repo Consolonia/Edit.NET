@@ -15,6 +15,8 @@ namespace EditNET.ViewModels
     public partial class MdiViewModel : ObservableObject
     {
         [ObservableProperty] private EditorViewModel _activeDocument = null!;
+
+        [ObservableProperty] private bool _debug;
         [ObservableProperty] private Settings _settings = null!;
 
         [Obsolete("For designer only")]
@@ -39,8 +41,6 @@ namespace EditNET.ViewModels
         public Interaction<Unit, Unit> ShutdownInteraction { get; } = new();
 
         public ObservableCollection<EditorViewModel> Documents { get; } = [];
-
-        [ObservableProperty] private bool _debug;
 
         public void NewCommand()
         {

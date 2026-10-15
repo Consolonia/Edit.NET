@@ -26,8 +26,8 @@ namespace EditNET.Views
 {
     public partial class EditorView : ManagedWindow
     {
-        internal static bool Animate = true;
         public const ThemeName DefaultEditorTheme = ThemeName.DimmedMonokai;
+        internal static bool Animate = true;
         private readonly RegistryOptions _registryOptions;
         private readonly TextMate.Installation _textMateInstallation;
 

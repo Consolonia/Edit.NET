@@ -20,11 +20,12 @@ namespace EditNET.Tests
         public async Task ExceptionFromDispatcherIsShown()
         {
             await SelectThrowMenuItem(0);
-            
+
             try
             {
                 await UITest.KeyInput(Key.Enter);
-                Assert.Fail("Input in UITest must be Dispatched with Dispatcher. This will fail once fixed. Then remove this and try/catch.");
+                Assert.Fail(
+                    "Input in UITest must be Dispatched with Dispatcher. This will fail once fixed. Then remove this and try/catch.");
             }
             catch (TargetInvocationException exception) when (exception.InnerException is InvalidOperationException)
             {
@@ -50,17 +51,17 @@ namespace EditNET.Tests
 
             await AssertErrorDialogShowsException(@"exception\W+thrown\W+from\W+unobserved\W+task");
         }
-        
+
         private async Task SelectThrowMenuItem(int index)
         {
             await WaitForText("Debug");
             await UITest.WaitRendered();
-            
+
             await UITest.AssertHasText("File", "Edit", "Help");
             await UITest.AssertHasText("1 document(s)");
 
             await UITest.WaitRendered();
-            
+
             await UITest.KeyInput(Key.D, RawInputModifiers.Alt);
             await UITest.AssertHasText("Exceptions");
             await UITest.KeyInput(Key.Right);
@@ -74,7 +75,7 @@ namespace EditNET.Tests
             await UITest.WaitRendered(); // dialog will be shown by dispatching new cycle
 
             await WaitForText("Unexpected Error"); // threadpool and dispatcher will show error at random moment
-            
+
             await UITest.AssertHasText("Unexpected Error", "An internal error has occurred");
             await UITest.AssertHasNoText("InvalidOperationException"); // details are collapsed
             await UITest.AssertHasNoMatch(messagePattern);
@@ -91,17 +92,18 @@ namespace EditNET.Tests
             await UITest.AssertHasNoText("Exception Details");
             await UITest.AssertHasText("File", "Edit", "Help");
         }
-        
+
         private async Task WaitForText(string text)
         {
-            using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(20)); //1 min we can wait for all tests
+            using var cancellationTokenSource =
+                new CancellationTokenSource(TimeSpan.FromSeconds(20)); //1 min we can wait for all tests
             while (!cancellationTokenSource.IsCancellationRequested)
             {
                 bool found = await Dispatcher.UIThread.InvokeAsync(() =>
                     UITest.PixelBuffer.PrintBuffer().Contains(text, StringComparison.Ordinal));
                 if (found)
                     break;
-                
+
                 await UITest.WaitRendered();
             }
 

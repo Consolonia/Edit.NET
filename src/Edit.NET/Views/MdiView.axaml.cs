@@ -259,12 +259,16 @@ namespace EditNET.Views
 
         private void ThrowFromThreadPool_OnClick(object? sender, RoutedEventArgs e)
         {
-            ThreadPool.QueueUserWorkItem(_ => throw new InvalidOperationException("This is test exception thrown from thread pool. Please, ignore this"));
+            ThreadPool.QueueUserWorkItem(_ =>
+                throw new InvalidOperationException(
+                    "This is test exception thrown from thread pool. Please, ignore this"));
         }
 
         private void ThrowFromUnobservedTask_OnClick(object? sender, RoutedEventArgs e)
         {
-            Task.Run(() => throw new InvalidOperationException("This is test exception thrown from unobserved task. Please, ignore this"));
+            Task.Run(() =>
+                throw new InvalidOperationException(
+                    "This is test exception thrown from unobserved task. Please, ignore this"));
 
             ThreadPool.QueueUserWorkItem(_ =>
             {
