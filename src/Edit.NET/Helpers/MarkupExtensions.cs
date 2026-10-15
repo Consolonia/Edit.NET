@@ -3,7 +3,7 @@ using System.IO;
 using Avalonia.Data.Converters;
 using EditNET.ViewModels;
 
-namespace EditNET
+namespace EditNET.Helpers
 {
     public static class EditConverters
     {

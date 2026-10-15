@@ -23,7 +23,7 @@ namespace EditNET
         private MainWindow MainWindow =>
             (MainWindow)((IClassicDesktopStyleApplicationLifetime)ApplicationLifetime!).MainWindow!;
 
-        private AppViewModel ViewModel => (AppViewModel)DataContext!;
+        internal AppViewModel ViewModel => (AppViewModel)DataContext!;
 
         public override void Initialize()
         {
@@ -80,12 +80,7 @@ namespace EditNET
 
             Dispatcher.UIThread.Post(async () =>
             {
-                if (desktopLifetime.Args is { Length: > 0 })
-                    await ViewModel.MdiViewModel.OpenFile(desktopLifetime.Args[0]);
-                else ViewModel.MdiViewModel.NewCommand();
-
-                if (PipingWorkaround.PipedInputContent != null)
-                    ViewModel.MdiViewModel.ActiveDocument.AppendContent(PipingWorkaround.PipedInputContent);
+                await ViewModel.ParseArguments(desktopLifetime.Args!);
             }, DispatcherPriority.ContextIdle);
         }
 

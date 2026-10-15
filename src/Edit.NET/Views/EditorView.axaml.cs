@@ -52,11 +52,7 @@ namespace EditNET.Views
         private MainWindow MainWindow => this.FindAncestorOfType<MainWindow>()!;
         private MdiView MdiView => this.FindAncestorOfType<MdiView>()!;
 
-        public EditorViewModel? ViewModel
-        {
-            get => (EditorViewModel?)DataContext;
-            set => DataContext = value;
-        }
+        public EditorViewModel? ViewModel => (EditorViewModel?)DataContext;
 
         private static IClassicDesktopStyleApplicationLifetime Lifetime
             => (IClassicDesktopStyleApplicationLifetime)Application.Current!.ApplicationLifetime!;

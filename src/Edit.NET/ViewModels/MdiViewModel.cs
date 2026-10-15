@@ -40,6 +40,8 @@ namespace EditNET.ViewModels
 
         public ObservableCollection<EditorViewModel> Documents { get; } = [];
 
+        [ObservableProperty] private bool _debug;
+
         public void NewCommand()
         {
             Documents.Add(new EditorViewModel(Settings));
