@@ -83,8 +83,8 @@ namespace EditNET.ViewModels
 
         public async Task StartAsync(ParserResult<StartupArguments>? parserResult)
         {
-            var tag = parserResult?.Tag ?? ParserResultType.Parsed;
-            var parserResultValue = parserResult?.Value ?? new StartupArguments();
+            ParserResultType tag = parserResult?.Tag ?? ParserResultType.Parsed;
+            StartupArguments parserResultValue = parserResult?.Value ?? new StartupArguments();
             switch (tag)
             {
                 case ParserResultType.Parsed:
