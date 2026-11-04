@@ -112,7 +112,7 @@ namespace EditNET.Views
             var editorView = new EditorView
             {
                 DataContext = newDocument,
-                AnimateWindow = true,
+                AnimateWindow = EditorView.Animate,
                 WindowState = WindowState.Normal,
                 // together with normal setup correct size to return from maximized
                 Width = Bounds.Width * 2 / 3 - ViewModel.Documents.Count,
