@@ -27,6 +27,7 @@ namespace EditNET.Views
     public partial class EditorView : ManagedWindow
     {
         public const ThemeName DefaultEditorTheme = ThemeName.DimmedMonokai;
+        internal static bool Animate = true;
         private readonly RegistryOptions _registryOptions;
         private readonly TextMate.Installation _textMateInstallation;
 
@@ -35,6 +36,8 @@ namespace EditNET.Views
         public EditorView()
         {
             InitializeComponent();
+
+            AnimateWindow = Animate;
 
             Editor.TextArea.IndentationStrategy = new CSharpIndentationStrategy(Editor.Options);
             Editor.TextArea.RightClickMovesCaret = true;
@@ -52,11 +55,7 @@ namespace EditNET.Views
         private MainWindow MainWindow => this.FindAncestorOfType<MainWindow>()!;
         private MdiView MdiView => this.FindAncestorOfType<MdiView>()!;
 
-        public EditorViewModel? ViewModel
-        {
-            get => (EditorViewModel?)DataContext;
-            set => DataContext = value;
-        }
+        public EditorViewModel? ViewModel => (EditorViewModel?)DataContext;
 
         private static IClassicDesktopStyleApplicationLifetime Lifetime
             => (IClassicDesktopStyleApplicationLifetime)Application.Current!.ApplicationLifetime!;

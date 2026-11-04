@@ -5,12 +5,11 @@
                              xmlns:helpers="clr-namespace:EditNET.Helpers"
                              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                              xmlns:windowManager="clr-namespace:Iciclecreek.Avalonia.WindowManager;assembly=Iciclecreek.Avalonia.WindowManager"
-                             xmlns:editNet="clr-namespace:EditNET"
                              x:Class="EditNET.Views.EditorView"
                              x:DataType="viewModels:EditorViewModel"
                              d:DataContext="{viewModels:EditorViewModel}"
                              WindowStartupLocation="CenterOwner"
-                             Title="{Binding FilePath, Converter={x:Static editNet:EditConverters.FilePathToNameConverter}}"
+                             Title="{Binding FilePath, Converter={x:Static helpers:EditConverters.FilePathToNameConverter}}"
                              Activated="ManagedWindow_OnActivated"
                              Closing="ManagedWindow_OnClosing">
     <windowManager:ManagedWindow.Resources>

@@ -2,8 +2,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:viewModels="clr-namespace:EditNET.ViewModels"
-             xmlns:editNet="clr-namespace:EditNET"
              xmlns:windowManager="clr-namespace:Iciclecreek.Avalonia.WindowManager;assembly=Iciclecreek.Avalonia.WindowManager"
+             xmlns:helpers="clr-namespace:EditNET.Helpers"
              x:Class="EditNET.Views.MdiView"
              Background="#2D2D2D"
              x:DataType="viewModels:MdiViewModel"
@@ -91,6 +91,17 @@
                 <MenuItem Header="_About"
                           Click="MenuItem_OnClick" />
             </MenuItem>
+            <MenuItem Header="_Debug"
+                      IsVisible="{Binding Debug}">
+                <MenuItem Header="Exceptions">
+                    <MenuItem Header="Throw from within dispatcher"
+                              Click="ThrowFromDispatcher_OnClick" />
+                    <MenuItem Header="Throw from thread pool"
+                              Click="ThrowFromThreadPool_OnClick" />
+                    <MenuItem Header="Throw from unobserved task"
+                              Click="ThrowFromUnobservedTask_OnClick" />
+                </MenuItem>
+            </MenuItem>
         </Menu>
         <Border x:Name="BottomPanel"
                 Background="{DynamicResource ThemeAlternativeBackgroundBrush}"
@@ -105,14 +116,14 @@
                     </Style>
                 </UniformGrid.Styles>
                 <TextBlock Name="DocsText"
-                           Text="{Binding Documents, Converter={x:Static editNet:EditConverters.DocumentsObservableCollectionToInfoConverter}}"
+                           Text="{Binding Documents, Converter={x:Static helpers:EditConverters.DocumentsObservableCollectionToInfoConverter}}"
                            HorizontalAlignment="Left" />
                 <TextBlock Name="PositionText"
                            Text="Ln 1, Col 1" />
                 <TextBlock Name="LengthText"
                            Text="Len 0" />
                 <TextBlock
-                    Text="{Binding ActiveDocument.Modified, Converter={x:Static editNet:EditConverters.ModifiedConverter}}"
+                    Text="{Binding ActiveDocument.Modified, Converter={x:Static helpers:EditConverters.ModifiedConverter}}"
                     HorizontalAlignment="Right" />
             </UniformGrid>
         </Border>

@@ -1,31 +1,43 @@
 // DUPFINDER_ignore
 
+using System;
+using System.Linq;
 using System.Threading;
 using Avalonia;
 using Avalonia.Controls.Platform;
+using CommandLine;
+using CommandLine.Text;
 using Consolonia;
+using EditNET.DataModels;
 using EditNET.Helpers.ThirdPartyStorageProviders;
 
 namespace EditNET
 {
     public static partial class Program
     {
-        private static Thread? _mainThread;
-
         private static void Main(string[] args)
         {
-            //Thread.Sleep(20000);
+            using var parser = new Parser(settings => settings.HelpWriter = null);
+            ParserResult<StartupArguments>? parserResult = parser.ParseArguments<StartupArguments>(args);
+            if (parserResult.Tag == ParserResultType.NotParsed &&
+                parserResult.Errors.Count() == 1 &&
+                parserResult.Errors.Single().Tag is ErrorType.HelpRequestedError or ErrorType.VersionRequestedError)
+            {
+                Console.WriteLine(HelpText.AutoBuild(parserResult));
+                return;
+            }
+
+            App.HandleProcessExceptions(Thread.CurrentThread);
 
             PipingWorkaround.ReadPipedInputAndReattachStdInFromTerminalIfRedirected();
 
-            _mainThread = Thread.CurrentThread;
-            BuildAvaloniaApp()
+            BuildAvaloniaApp(parserResult)
                 .StartWithConsoleLifetime(args);
         }
 
-        private static AppBuilder BuildAvaloniaApp()
+        private static AppBuilder BuildAvaloniaApp(ParserResult<StartupArguments> parserResult)
         {
-            return AppBuilder.Configure<App>()
+            return AppBuilder.Configure(() => new App { ParsedArguments = parserResult })
                 .UseConsolonia()
                 .UseAutoDetectedConsole()
                 .WithDeveloperTools()

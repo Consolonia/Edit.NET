@@ -29,6 +29,10 @@
     <PropertyGroup Condition="'$(Configuration)' != 'Debug'">
         <DefineConstants>$(DefineConstants);HANDLE_CRASH</DefineConstants>
     </PropertyGroup>
+    
+    <ItemGroup>
+        <InternalsVisibleTo Include="Edit.NET.Tests" />
+    </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
@@ -36,6 +40,7 @@
         <PackageReference Include="AvaloniaEdit.TextMate" Version="12.0.0" />
         <PackageReference Include="Avalonia.ReactiveUI" Version="11.3.8" />
         <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.3" />
+        <PackageReference Include="CommandLineParser" Version="2.9.1" />
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
         <PackageReference Include="Consolonia" Version="$(ConsoloniaVersionLatest)" />
         <PackageReference Include="Consolonia.AvaloniaEdit" Version="$(ConsoloniaVersionLatest)" />
@@ -46,6 +51,15 @@
         <PackageReference Include="JetBrains.Annotations" Version="2025.2.2" />
         <PackageReference Include="TextMateSharp" Version="2.0.4" />
         <PackageReference Include="TextMateSharp.Grammars" Version="2.0.4" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="Program.error.cs">
+        <DependentUpon>Program.cs</DependentUpon>
+      </Compile>
+      <Compile Update="App.error.cs">
+        <DependentUpon>App.axaml.cs</DependentUpon>
+      </Compile>
     </ItemGroup>
 
     <Target Name="PackPortable" AfterTargets="Pack"

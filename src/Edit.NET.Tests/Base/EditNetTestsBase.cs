@@ -1,5 +1,6 @@
 using Consolonia.Core.Drawing.PixelBufferImplementation;
 using Consolonia.NUnit;
+using EditNET.Views;
 
 namespace EditNET.Tests.Base
 {
@@ -8,9 +9,14 @@ namespace EditNET.Tests.Base
     /// </summary>
     internal abstract class EditNetTestsBase : ConsoloniaAppTestBase<App>
     {
-        protected EditNetTestsBase() : base(new PixelBufferSize(100, 30))
+        static EditNetTestsBase()
         {
-            Args = [];
+            EditorView.Animate = false;
+        }
+
+        protected EditNetTestsBase(params string[] args) : base(new PixelBufferSize(100, 30))
+        {
+            Args = args;
         }
     }
 }

@@ -3,7 +3,10 @@ using System.IO;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Avalonia.Controls.Notifications;
+using CommandLine;
+using CommandLine.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
 using EditNET.DataModels;
 using ReactiveUI;
@@ -76,6 +79,34 @@ namespace EditNET.ViewModels
                 await ShowNotificationInteraction.Handle(new Notification("Settings Error",
                     "Failed to save settings file: " + exception.Message, NotificationType.Error));
             }
+        }
+
+        public async Task StartAsync(ParserResult<StartupArguments>? parserResult)
+        {
+            ParserResultType tag = parserResult?.Tag ?? ParserResultType.Parsed;
+            StartupArguments parserResultValue = parserResult?.Value ?? new StartupArguments();
+            switch (tag)
+            {
+                case ParserResultType.Parsed:
+                    MdiViewModel.Debug = parserResultValue.Debug;
+                    if (!string.IsNullOrEmpty(parserResultValue.File))
+                        await MdiViewModel.OpenFile(parserResultValue.File);
+                    else
+                        MdiViewModel.NewCommand();
+                    break;
+                case ParserResultType.NotParsed:
+                    MdiViewModel.NewCommand();
+                    string errorMessage = HelpText.AutoBuild(parserResult);
+                    await Console.Error.WriteLineAsync(errorMessage);
+                    await MdiViewModel.ActiveDocument.MessageBoxInteraction.Handle(
+                        new MessageBoxModel("Error", errorMessage, MessageBoxButtons.Ok));
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(parserResult), $"Unexpected parser result tag: {tag}");
+            }
+
+            if (PipingWorkaround.PipedInputContent != null)
+                MdiViewModel.ActiveDocument.AppendContent(PipingWorkaround.PipedInputContent);
         }
     }
 }
