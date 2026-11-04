@@ -1,12 +1,12 @@
 using System;
 using System.IO;
-using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Avalonia.Controls.Notifications;
 using CommandLine;
+using CommandLine.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
 using EditNET.DataModels;
 using ReactiveUI;
@@ -81,11 +81,8 @@ namespace EditNET.ViewModels
             }
         }
 
-        public async Task ParseArguments(string[] desktopLifetimeArgs)
+        public async Task ParseArguments(ParserResult<StartupArguments> parserResult)
         {
-            ParserResult<StartupArguments> parserResult =
-                Parser.Default.ParseArguments<StartupArguments>(desktopLifetimeArgs);
-
             switch (parserResult.Tag)
             {
                 case ParserResultType.Parsed:
@@ -97,14 +94,12 @@ namespace EditNET.ViewModels
                     break;
                 case ParserResultType.NotParsed:
                     MdiViewModel.NewCommand();
-                    string errorMessage = parserResult.Errors.Aggregate("Invalid arguments provided:",
-                        (current, error) => current + (Environment.NewLine + error));
-                    await MdiViewModel.ActiveDocument.MessageBoxInteraction.Handle(
-                        new MessageBoxModel("Error", errorMessage, MessageBoxButtons.Ok));
+                    string errorMessage = HelpText.AutoBuild(parserResult);
                     await Console.Error.WriteLineAsync(errorMessage);
+                    await MdiViewModel.ActiveDocument.MessageBoxInteraction.Handle(new MessageBoxModel("Error", errorMessage, MessageBoxButtons.Ok));
                     break;
             }
-
+                
             if (PipingWorkaround.PipedInputContent != null)
                 MdiViewModel.ActiveDocument.AppendContent(PipingWorkaround.PipedInputContent);
         }

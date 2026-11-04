@@ -9,6 +9,8 @@ using Avalonia.Styling;
 using Avalonia.Threading;
 using Consolonia;
 using Consolonia.Themes;
+using CommandLine;
+using EditNET.DataModels;
 using EditNET.ViewModels;
 using EditNET.Views;
 using ReactiveUI;
@@ -19,6 +21,8 @@ namespace EditNET
     public partial class App : Application
     {
         private WindowNotificationManager? _notificationManager;
+
+        public ParserResult<StartupArguments>? ParsedArguments { get; init; }
 
         private MainWindow MainWindow =>
             (MainWindow)((IClassicDesktopStyleApplicationLifetime)ApplicationLifetime!).MainWindow!;
@@ -78,8 +82,9 @@ namespace EditNET
 
             if (!themeLoaded) ShowThemeIncompatible();
 
-            Dispatcher.UIThread.Post(async () => { await ViewModel.ParseArguments(desktopLifetime.Args!); },
-                DispatcherPriority.ContextIdle);
+            if (ParsedArguments != null)
+                Dispatcher.UIThread.Post(async () => { await ViewModel.ParseArguments(ParsedArguments); },
+                    DispatcherPriority.ContextIdle);
         }
 
         private void ShowThemeIncompatible()
