@@ -266,12 +266,13 @@ namespace EditNET.Views
 
         private void ThrowFromUnobservedTask_OnClick(object? sender, RoutedEventArgs e)
         {
-            Task.Run(() =>
+            var taskToFail = Task.Run(() =>
                 throw new InvalidOperationException(
                     "This is test exception thrown from unobserved task. Please, ignore this"));
 
             ThreadPool.QueueUserWorkItem(_ =>
             {
+                while (!taskToFail.IsFaulted) ;
                 Dispatcher.Invoke(() => { }); //parent method must exit before we can collect the task
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
