@@ -7,8 +7,10 @@ using Avalonia.Controls.Notifications;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 using Avalonia.Threading;
+using CommandLine;
 using Consolonia;
 using Consolonia.Themes;
+using EditNET.DataModels;
 using EditNET.ViewModels;
 using EditNET.Views;
 using ReactiveUI;
@@ -20,10 +22,12 @@ namespace EditNET
     {
         private WindowNotificationManager? _notificationManager;
 
+        public ParserResult<StartupArguments>? ParsedArguments { get; init; }
+
         private MainWindow MainWindow =>
             (MainWindow)((IClassicDesktopStyleApplicationLifetime)ApplicationLifetime!).MainWindow!;
 
-        private AppViewModel ViewModel => (AppViewModel)DataContext!;
+        internal AppViewModel ViewModel => (AppViewModel)DataContext!;
 
         public override void Initialize()
         {
@@ -78,15 +82,9 @@ namespace EditNET
 
             if (!themeLoaded) ShowThemeIncompatible();
 
-            Dispatcher.UIThread.Post(async () =>
-            {
-                if (desktopLifetime.Args is { Length: > 0 })
-                    await ViewModel.MdiViewModel.OpenFile(desktopLifetime.Args[0]);
-                else ViewModel.MdiViewModel.NewCommand();
 
-                if (PipingWorkaround.PipedInputContent != null)
-                    ViewModel.MdiViewModel.ActiveDocument.AppendContent(PipingWorkaround.PipedInputContent);
-            }, DispatcherPriority.ContextIdle);
+            Dispatcher.UIThread.Post(async () => { await ViewModel.StartAsync(ParsedArguments); },
+                DispatcherPriority.ContextIdle);
         }
 
         private void ShowThemeIncompatible()
