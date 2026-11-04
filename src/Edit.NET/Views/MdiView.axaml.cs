@@ -266,7 +266,7 @@ namespace EditNET.Views
 
         private void ThrowFromUnobservedTask_OnClick(object? sender, RoutedEventArgs e)
         {
-            var taskToFail = Task.Run(() =>
+            Task taskToFail = Task.Run(() =>
                 throw new InvalidOperationException(
                     "This is test exception thrown from unobserved task. Please, ignore this"));
 
