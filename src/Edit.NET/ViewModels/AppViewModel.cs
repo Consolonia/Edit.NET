@@ -81,14 +81,16 @@ namespace EditNET.ViewModels
             }
         }
 
-        public async Task ParseArguments(ParserResult<StartupArguments> parserResult)
+        public async Task StartAsync(ParserResult<StartupArguments>? parserResult)
         {
-            switch (parserResult.Tag)
+            var tag = parserResult?.Tag ?? ParserResultType.Parsed;
+            var parserResultValue = parserResult?.Value ?? new StartupArguments();
+            switch (tag)
             {
                 case ParserResultType.Parsed:
-                    MdiViewModel.Debug = parserResult.Value.Debug;
-                    if (!string.IsNullOrEmpty(parserResult.Value.File))
-                        await MdiViewModel.OpenFile(parserResult.Value.File);
+                    MdiViewModel.Debug = parserResultValue.Debug;
+                    if (!string.IsNullOrEmpty(parserResultValue.File))
+                        await MdiViewModel.OpenFile(parserResultValue.File);
                     else
                         MdiViewModel.NewCommand();
                     break;
@@ -99,6 +101,8 @@ namespace EditNET.ViewModels
                     await MdiViewModel.ActiveDocument.MessageBoxInteraction.Handle(
                         new MessageBoxModel("Error", errorMessage, MessageBoxButtons.Ok));
                     break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(parserResult), $"Unexpected parser result tag: {tag}");
             }
 
             if (PipingWorkaround.PipedInputContent != null)

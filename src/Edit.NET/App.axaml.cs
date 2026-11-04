@@ -82,9 +82,9 @@ namespace EditNET
 
             if (!themeLoaded) ShowThemeIncompatible();
 
-            if (ParsedArguments != null)
-                Dispatcher.UIThread.Post(async () => { await ViewModel.ParseArguments(ParsedArguments); },
-                    DispatcherPriority.ContextIdle);
+
+            Dispatcher.UIThread.Post(async () => { await ViewModel.StartAsync(ParsedArguments); },
+                DispatcherPriority.ContextIdle);
         }
 
         private void ShowThemeIncompatible()
