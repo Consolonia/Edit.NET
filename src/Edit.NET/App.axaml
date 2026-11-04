@@ -7,7 +7,7 @@
     <Application.Styles>
         <console:ModernTheme />
         <modal:ModalTheme />
-        <StyleInclude Source="avares://Consolonia.AvaloniaEdit/Theme.axaml" />
+        <console:AvaloniaEditTheme />
         <managedWindows:AutoManagedWindowStyles />
     </Application.Styles>
 </Application>

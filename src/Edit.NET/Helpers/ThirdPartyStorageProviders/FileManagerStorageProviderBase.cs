@@ -25,6 +25,13 @@ namespace EditNET.Helpers.ThirdPartyStorageProviders
             return [new StorageFile(selectedPath)];
         }
 
+        public async Task<OpenFilePickerResult> OpenFilePickerWithResultAsync(FilePickerOpenOptions options)
+        {
+            IReadOnlyList<IStorageFile> files = await OpenFilePickerAsync(options);
+
+            return new OpenFilePickerResult { Files = files };
+        }
+
         public async Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options)
         {
             string? location = options.SuggestedStartLocation?.Path.LocalPath;
