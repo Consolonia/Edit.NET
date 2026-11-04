@@ -96,10 +96,11 @@ namespace EditNET.ViewModels
                     MdiViewModel.NewCommand();
                     string errorMessage = HelpText.AutoBuild(parserResult);
                     await Console.Error.WriteLineAsync(errorMessage);
-                    await MdiViewModel.ActiveDocument.MessageBoxInteraction.Handle(new MessageBoxModel("Error", errorMessage, MessageBoxButtons.Ok));
+                    await MdiViewModel.ActiveDocument.MessageBoxInteraction.Handle(
+                        new MessageBoxModel("Error", errorMessage, MessageBoxButtons.Ok));
                     break;
             }
-                
+
             if (PipingWorkaround.PipedInputContent != null)
                 MdiViewModel.ActiveDocument.AppendContent(PipingWorkaround.PipedInputContent);
         }
