@@ -2,6 +2,8 @@
 Edit.NET is a powerful terminal-based text editor built with Avalonia and Consolonia, designed to provide a seamless and efficient editing experience in the console.
 
 <img width="1355" height="1021" alt="image" src="https://github.com/user-attachments/assets/9f43ed87-92c7-4765-8d90-b8a7362c7704" />
+<img width="1481" height="921" alt="image" src="https://github.com/user-attachments/assets/2cd8fa78-8159-4377-b95b-09b64b1174d3" />
+
 
 ## Installation
 
